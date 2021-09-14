@@ -33,6 +33,8 @@ TEST(ParallelBufferPoolManagerTest, BinaryDataTest) {
   auto *disk_manager = new DiskManager(db_name);
   auto *bpm = new ParallelBufferPoolManager(num_instances, buffer_pool_size, disk_manager);
 
+  EXPECT_EQ(50, bpm->GetPoolSize());
+
   page_id_t page_id_temp;
   auto *page0 = bpm->NewPage(&page_id_temp);
 
@@ -95,6 +97,8 @@ TEST(ParallelBufferPoolManagerTest, SampleTest) {
   auto *disk_manager = new DiskManager(db_name);
   auto *bpm = new ParallelBufferPoolManager(num_instances, buffer_pool_size, disk_manager);
 
+  EXPECT_EQ(50, bpm->GetPoolSize());
+
   page_id_t page_id_temp;
   auto *page0 = bpm->NewPage(&page_id_temp);
 
@@ -148,6 +152,48 @@ TEST(ParallelBufferPoolManagerTest, SampleTest) {
 
   delete bpm;
   delete disk_manager;
+}
+
+TEST(ParallelBufferPoolManagerTest, DeleteTest) {
+  const std::string db_name = "test.db";
+  const size_t buffer_pool_size = 10;
+  const size_t num_instances = 5;
+
+  auto *disk_manager = new DiskManager(db_name);
+  auto *bpm = new ParallelBufferPoolManager(num_instances, buffer_pool_size, disk_manager);
+
+  for (int i = 0; i < 5; i++) {
+    EXPECT_EQ(false,bpm->DeletePage(i));
+  }
+}
+
+TEST(ParallelBufferPoolManagerTest, FlushTest) {
+  const std::string db_name = "test.db";
+  const size_t buffer_pool_size = 10;
+  const size_t num_instances = 5;
+
+  auto *disk_manager = new DiskManager(db_name);
+  auto *bpm = new ParallelBufferPoolManager(num_instances, buffer_pool_size, disk_manager);
+
+  page_id_t page_id_temp;
+  auto page0 = bpm->NewPage(&page_id_temp);
+  snprintf(page0->GetData(), PAGE_SIZE, "Hello");
+  EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
+
+  auto page1 = bpm->NewPage(&page_id_temp);
+  snprintf(page1->GetData(), PAGE_SIZE, "World");
+  EXPECT_EQ(0, strcmp(page1->GetData(), "World"));
+
+  for (int i = 0; i < 2; i++) {
+    EXPECT_EQ(true, bpm->UnpinPage(i, true));
+  }
+
+  bpm->FlushAllPages();
+  page0 = bpm->FetchPage(0);
+  EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
+
+  page1 = bpm->FetchPage(1);
+  EXPECT_EQ(0 ,strcmp(page1->GetData(), "World"));
 }
 
 }  // namespace bustub
