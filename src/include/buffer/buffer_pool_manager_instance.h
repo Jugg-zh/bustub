@@ -144,5 +144,12 @@ class BufferPoolManagerInstance : public BufferPoolManager {
   std::list<frame_id_t> free_list_;
   /** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */
   std::mutex latch_;
+
+ private:
+  /**
+   * Find a replacement page (R) from either the free list or the replacer.
+   * @return The id of the replacement page.
+   */
+  frame_id_t FindRPage();
 };
 }  // namespace bustub
