@@ -85,7 +85,7 @@ add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src" "${CMAKE_BINARY_DIR}/googl
 # Compiler flags.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall -Wextra -Werror -march=native")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-parameter -Wno-attributes") #TODO: remove
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -coverage")
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fPIC")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fPIC")
 set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} -fPIC")
@@ -175,3 +175,14 @@ add_custom_target(check-clang-tidy
         -p ${CMAKE_BINARY_DIR}                                            # using cmake's generated compile commands
         )
 add_dependencies(check-clang-tidy gtest bustub_shared)                    # needs gtest headers, compile_commands.json
+
+###########################################################
+# "make code-coverage"
+###########################################################
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+        set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+        include(CodeCoverage)
+        setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE_DIR}/test/*"
+                                                                        "${PROJECT_SOURCE_DIR}/third_party/*"
+                                                                        "${PROJECT_SOURCE_DIR}/build/*")      
+endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
