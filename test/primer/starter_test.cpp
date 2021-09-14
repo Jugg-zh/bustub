@@ -42,7 +42,7 @@ TEST(StarterTest, SampleTest) {
 }
 
 /** Test that matrix initialization works as expected */
-TEST(StarterTest, DISABLED_InitializationTest) {
+TEST(StarterTest, InitializationTest) {
   auto matrix = std::make_unique<RowMatrix<int>>(2, 2);
 
   // Source contains too few elements
@@ -66,9 +66,24 @@ TEST(StarterTest, DISABLED_InitializationTest) {
       EXPECT_EQ(expected, matrix->GetElement(i, j));
     }
   }
+
+  auto matrix_a = std::make_unique<RowMatrix<int>>(0, 2);
+  EXPECT_EQ(-1, matrix_a->GetRowCount());
+
+  auto matrix_b = std::make_unique<RowMatrix<int>>(-1, 2);
+  EXPECT_EQ(-1, matrix_b->GetRowCount());
+
+  auto matrix_c = std::make_unique<RowMatrix<int>>(2, 0);
+  EXPECT_EQ(-1, matrix_c->GetRowCount());
+
+  auto matrix_d = std::make_unique<RowMatrix<int>>(2, -1);
+  EXPECT_EQ(-1, matrix_d->GetRowCount());
+
+  auto matrix_e = std::make_unique<RowMatrix<int>>(-1, -1);
+  EXPECT_EQ(-1, matrix_e->GetRowCount());
 }
 
-TEST(StarterTest, DISABLED_ElementAccessTest) {
+TEST(StarterTest, ElementAccessTest) {
   auto matrix = std::make_unique<RowMatrix<int>>(2, 2);
 
   std::vector<int> source(4);
@@ -115,7 +130,7 @@ TEST(StarterTest, DISABLED_ElementAccessTest) {
 }
 
 /** Test that matrix addition works as expected */
-TEST(StarterTest, DISABLED_AdditionTest) {
+TEST(StarterTest, AdditionTest) {
   auto matrix0 = std::make_unique<RowMatrix<int>>(3, 3);
 
   const std::vector<int> source0{1, 4, 2, 5, 2, -1, 0, 3, 1};
@@ -152,10 +167,31 @@ TEST(StarterTest, DISABLED_AdditionTest) {
       EXPECT_EQ(expected[i * sum->GetColumnCount() + j], sum->GetElement(i, j));
     }
   }
+
+  // Test addition fails
+  auto matrix2 = std::make_unique<RowMatrix<int>>(2, 3);
+  const std::vector<int> source2{1, 2, 3, 4, 5, 6};
+  matrix2->FillFrom(source2);
+
+  auto matrix3 = std::make_unique<RowMatrix<int>>(3, 2);
+  const std::vector<int> source3{6, 5, 4, 3, 2, 1};
+  matrix3->FillFrom(source3);
+
+  auto expected_nullptr = std::unique_ptr<RowMatrix<int>>(nullptr);
+
+  auto product1 = RowMatrixOperations<int>::Add(matrix0.get(), matrix2.get());
+  auto product2 = RowMatrixOperations<int>::Add(matrix1.get(), matrix3.get());
+
+  EXPECT_EQ(expected_nullptr, product1);
+  EXPECT_EQ(expected_nullptr, product2);
+
+  // Test null matrix
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::Add(nullptr, matrix0.get()));
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::Add(matrix0.get(), nullptr));
 }
 
 /** Test that matrix multiplication works as expected */
-TEST(StarterTest, DISABLED_MultiplicationTest) {
+TEST(StarterTest, MultiplicationTest) {
   const std::vector<int> source0{1, 2, 3, 4, 5, 6};
   auto matrix0 = std::make_unique<RowMatrix<int>>(2, 3);
   matrix0->FillFrom(source0);
@@ -178,16 +214,89 @@ TEST(StarterTest, DISABLED_MultiplicationTest) {
   const std::vector<int> expected{0, 14, -6, 32};
 
   // Perform the multiplication operation
-  auto product = RowMatrixOperations<int>::Multiply(matrix0.get(), matrix1.get());
+  auto product0 = RowMatrixOperations<int>::Multiply(matrix0.get(), matrix1.get());
 
   // (2,3) * (3,2) -> (2,2)
-  EXPECT_EQ(2, product->GetRowCount());
-  EXPECT_EQ(2, product->GetColumnCount());
+  EXPECT_EQ(2, product0->GetRowCount());
+  EXPECT_EQ(2, product0->GetColumnCount());
 
-  for (int i = 0; i < product->GetRowCount(); i++) {
-    for (int j = 0; j < product->GetColumnCount(); j++) {
-      EXPECT_EQ(expected[i * product->GetColumnCount() + j], product->GetElement(i, j));
+  for (int i = 0; i < product0->GetRowCount(); i++) {
+    for (int j = 0; j < product0->GetColumnCount(); j++) {
+      EXPECT_EQ(expected[i * product0->GetColumnCount() + j], product0->GetElement(i, j));
     }
   }
+
+  // Test multiplication fails
+  auto matrix2 = std::make_unique<RowMatrix<int>>(2, 3);
+  const std::vector<int> source2{6, 5, 4, 3, 2, 1};
+  matrix2->FillFrom(source2);
+
+  auto expected_nullptr = std::unique_ptr<RowMatrix<int>>(nullptr);
+
+  auto product1 = RowMatrixOperations<int>::Multiply(matrix0.get(), matrix2.get());
+
+  EXPECT_EQ(expected_nullptr, product1);
+
+  // Test null matrix
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::Multiply(nullptr, matrix0.get()));
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::Multiply(matrix0.get(), nullptr));
+}
+
+/** Test that matrix GEMM works as expected */
+TEST(StarterTest, GEMMTest) {
+  const std::vector<int> source0{1, 2, 3, 4, 5, 6};
+  auto matrix0 = std::make_unique<RowMatrix<int>>(2, 3);
+  matrix0->FillFrom(source0);
+  for (int i = 0; i < matrix0->GetRowCount(); i++) {
+    for (int j = 0; j < matrix0->GetColumnCount(); j++) {
+      EXPECT_EQ(source0[i * matrix0->GetColumnCount() + j], matrix0->GetElement(i, j));
+    }
+  }
+
+  auto matrix1 = std::make_unique<RowMatrix<int>>(3, 2);
+  const std::vector<int> source1{-2, 1, -2, 2, 2, 3};
+  matrix1->FillFrom(source1);
+  for (int i = 0; i < matrix1->GetRowCount(); i++) {
+    for (int j = 0; j < matrix1->GetColumnCount(); j++) {
+      EXPECT_EQ(source1[i * matrix1->GetColumnCount() + j], matrix1->GetElement(i, j));
+    }
+  }
+
+  const std::vector<int> source2{6, 5, 4, 3};
+  auto matrix2 = std::make_unique<RowMatrix<int>>(2, 2);
+  matrix2->FillFrom(source2);
+  for (int i = 0; i < matrix2->GetRowCount(); i++) {
+    for (int j = 0; j < matrix2->GetColumnCount(); j++) {
+      EXPECT_EQ(source2[i * matrix1->GetColumnCount() + j], matrix2->GetElement(i, j));
+    }
+  }
+
+  const std::vector<int> expected = {6, 19, -2, 35};
+
+  auto product0 = RowMatrixOperations<int>::GEMM(matrix0.get(), matrix1.get(), matrix2.get());
+
+  EXPECT_EQ(2, product0->GetRowCount());
+  EXPECT_EQ(2, product0->GetColumnCount());
+
+  for (int i = 0; i < product0->GetRowCount(); i++) {
+    for (int j = 0; j < product0->GetColumnCount(); j++) {
+      EXPECT_EQ(expected[i * product0->GetColumnCount() + j], product0->GetElement(i, j));
+    }
+  }
+
+  // Test GEMM fails
+  auto expected_nullptr = std::unique_ptr<RowMatrix<int>>(nullptr);
+
+  auto product1 = RowMatrixOperations<int>::GEMM(matrix0.get(), matrix2.get(), matrix1.get());
+
+  auto product2 = RowMatrixOperations<int>::GEMM(matrix2.get(), matrix0.get(), matrix1.get());
+
+  EXPECT_EQ(expected_nullptr, product1);
+  EXPECT_EQ(expected_nullptr, product2);
+
+  // Test null matrix
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::GEMM(nullptr, matrix0.get(), matrix1.get()));
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::GEMM(matrix0.get(), nullptr, matrix1.get()));
+  EXPECT_EQ(nullptr, RowMatrixOperations<int>::GEMM(matrix0.get(), matrix1.get(), nullptr));
 }
 }  // namespace bustub
