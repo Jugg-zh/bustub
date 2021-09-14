@@ -163,8 +163,20 @@ TEST(ParallelBufferPoolManagerTest, DeleteTest) {
   auto *bpm = new ParallelBufferPoolManager(num_instances, buffer_pool_size, disk_manager);
 
   for (int i = 0; i < 5; i++) {
-    EXPECT_EQ(false,bpm->DeletePage(i));
+    EXPECT_EQ(true, bpm->DeletePage(i));
   }
+
+  page_id_t page_id_temp;
+  auto page0 = bpm->NewPage(&page_id_temp);
+  snprintf(page0->GetData(), PAGE_SIZE, "Hello");
+  EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
+  EXPECT_EQ(false, bpm->DeletePage(0));
+  bpm->UnpinPage(0, false);
+  bpm->FlushAllPages();
+  EXPECT_EQ(true, bpm->DeletePage(0));
+
+  delete bpm;
+  delete disk_manager;
 }
 
 TEST(ParallelBufferPoolManagerTest, FlushTest) {
@@ -193,7 +205,10 @@ TEST(ParallelBufferPoolManagerTest, FlushTest) {
   EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
 
   page1 = bpm->FetchPage(1);
-  EXPECT_EQ(0 ,strcmp(page1->GetData(), "World"));
+  EXPECT_EQ(0, strcmp(page1->GetData(), "World"));
+
+  delete bpm;
+  delete disk_manager;
 }
 
 }  // namespace bustub
