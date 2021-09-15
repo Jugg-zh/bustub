@@ -141,4 +141,68 @@ TEST(BufferPoolManagerInstanceTest, SampleTest) {
   delete disk_manager;
 }
 
+TEST(BufferPoolManagerInstanceTest, FlushTest) {
+  const std::string db_name = "test.db";
+  const size_t buffer_pool_size = 10;
+
+  auto *disk_manager = new DiskManager(db_name);
+  auto *bpm = new BufferPoolManagerInstance(buffer_pool_size, disk_manager);
+
+  for (size_t i = 0; i < buffer_pool_size; i++) {
+    EXPECT_EQ(false, bpm->FlushPage(i));
+  }
+
+  page_id_t page_id_temp;
+  auto page0 = bpm->NewPage(&page_id_temp);
+  snprintf(page0->GetData(), PAGE_SIZE, "Hello");
+  EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
+
+  auto page1 = bpm->NewPage(&page_id_temp);
+  snprintf(page1->GetData(), PAGE_SIZE, "World");
+  EXPECT_EQ(0, strcmp(page1->GetData(), "World"));
+
+  for (int i = 0; i < 2; i++) {
+    EXPECT_EQ(true, bpm->UnpinPage(i, true));
+  }
+  for (size_t i = 2; i < buffer_pool_size; i++) {
+    EXPECT_EQ(false, bpm->UnpinPage(i, false));
+  }
+
+  bpm->FlushAllPages();
+  page0 = bpm->FetchPage(0);
+  EXPECT_EQ(0, strcmp(page0->GetData(), "Hello"));
+
+  page1 = bpm->FetchPage(1);
+  EXPECT_EQ(0, strcmp(page1->GetData(), "World"));
+
+  delete bpm;
+  delete disk_manager;
+}
+
+TEST(BufferPoolManagerInstanceTest, DeleteTest) {
+  const std::string db_name = "test.db";
+  const size_t buffer_pool_size = 5;
+
+  auto *disk_manager = new DiskManager(db_name);
+  auto *bpm = new BufferPoolManagerInstance(buffer_pool_size, disk_manager);
+
+  page_id_t page_id_temp;
+  for (size_t i = 0; i < buffer_pool_size; i++) {
+    EXPECT_NE(nullptr, bpm->NewPage(&page_id_temp));
+  }
+  for (size_t i = buffer_pool_size; i < buffer_pool_size * 2; i++) {
+    EXPECT_EQ(nullptr, bpm->NewPage(&page_id_temp));
+  }
+  for (size_t i = 0; i < buffer_pool_size; i++) {
+    EXPECT_EQ(false, bpm->DeletePage(i));
+  }
+
+  bpm->UnpinPage(0, false);
+  EXPECT_EQ(true, bpm->DeletePage(0));
+  EXPECT_NE(nullptr, bpm->NewPage(&page_id_temp));
+
+  delete bpm;
+  delete disk_manager;
+}
+
 }  // namespace bustub
