@@ -72,7 +72,7 @@ Page *ParallelBufferPoolManager::NewPgImp(page_id_t *page_id) {
     }
     start_index = (start_index + 1) % bpmis_.size();
   } while (start_index != last_alloc_index_);
-
+  last_alloc_index_ = (last_alloc_index_ + 1) % bpmis_.size();
   return nullptr;
 }
 
