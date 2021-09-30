@@ -147,9 +147,22 @@ class BufferPoolManagerInstance : public BufferPoolManager {
 
  private:
   /**
-   * Find a replacement page (R) from either the free list or the replacer.
-   * @return The id of the replacement page.
+   * Find a fresh page.
+   * @return the frame id of the fresh page, or -1 if not found.
    */
-  frame_id_t FindRPage();
+  frame_id_t FindFreshPage();
+
+  /**
+   * Flush the contents of page to disk.
+   * @param page_id the page id of the page to be flushed.
+   */
+  void FlushPg(page_id_t page_id);
+
+  /**
+   * Find the page specified by page id
+   * @param page_id the page id of the page to be found.
+   * @return the frame id of the page, or -1 if not found.
+   */
+  frame_id_t FindPage(page_id_t page_id) const;
 };
 }  // namespace bustub
