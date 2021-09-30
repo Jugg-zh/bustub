@@ -164,7 +164,7 @@ TEST(BufferPoolManagerInstanceTest, FlushTest) {
   for (int i = 0; i < 2; i++) {
     EXPECT_EQ(true, bpm->UnpinPage(i, true));
   }
-  for (size_t i = 2; i < buffer_pool_size; i++) {
+  for (size_t i = 0; i < buffer_pool_size; i++) {
     EXPECT_EQ(false, bpm->UnpinPage(i, false));
   }
 

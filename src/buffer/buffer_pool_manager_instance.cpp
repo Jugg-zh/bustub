@@ -185,7 +185,7 @@ frame_id_t BufferPoolManagerInstance::FindFreshPage() {
 
 void BufferPoolManagerInstance::FlushPg(page_id_t page_id) {
   auto frame_id = FindPage(page_id);
-  if (frame_id != -1 && pages_[frame_id].IsDirty()) {
+  if (pages_[frame_id].IsDirty()) {
     disk_manager_->WritePage(page_id, pages_[frame_id].GetData());
   }
 }
