@@ -34,10 +34,6 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-    
-    - name: Check Format
-      working-directory: ${{github.workspace}}/build
-      run: make check-format
 
     - name: Check Lint
       working-directory: ${{github.workspace}}/build
