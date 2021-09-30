@@ -57,6 +57,8 @@ class LRUReplacer : public Replacer {
 
   /** The iterator in this vector points to wait_list_. */
   std::vector<std::list<frame_id_t>::iterator> page2iter_;
+
+  std::mutex latch_{};
 };
 
 }  // namespace bustub

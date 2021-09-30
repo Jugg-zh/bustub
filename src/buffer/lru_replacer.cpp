@@ -19,7 +19,8 @@ LRUReplacer::LRUReplacer(size_t num_pages) : page2iter_{num_pages} {}
 LRUReplacer::~LRUReplacer() = default;
 
 bool LRUReplacer::Victim(frame_id_t *frame_id) {
-  if (Size() == 0) {
+  std::lock_guard<std::mutex> lock_guard(latch_);
+  if (wait_list_.empty()) {
     *frame_id = INVALID_PAGE_ID;
     return false;
   }
@@ -30,6 +31,7 @@ bool LRUReplacer::Victim(frame_id_t *frame_id) {
 }
 
 void LRUReplacer::Pin(frame_id_t frame_id) {
+  std::lock_guard<std::mutex> lock_guard(latch_);
   if (!IsInReplacer(frame_id)) {
     return;
   }
@@ -38,6 +40,7 @@ void LRUReplacer::Pin(frame_id_t frame_id) {
 }
 
 void LRUReplacer::Unpin(frame_id_t frame_id) {
+  std::lock_guard<std::mutex> lock_guard(latch_);
   if (IsInReplacer(frame_id)) {
     return;
   }
@@ -45,7 +48,10 @@ void LRUReplacer::Unpin(frame_id_t frame_id) {
   page2iter_[frame_id] = wait_list_.begin();
 }
 
-size_t LRUReplacer::Size() { return wait_list_.size(); }
+size_t LRUReplacer::Size() {
+  std::lock_guard<std::mutex> lock_guard(latch_);
+  return wait_list_.size();
+}
 
 bool LRUReplacer::IsInReplacer(frame_id_t frame_id) {
   return page2iter_[frame_id] != std::list<frame_id_t>::iterator{};
