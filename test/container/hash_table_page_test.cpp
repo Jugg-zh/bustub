@@ -120,7 +120,7 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageSplitTest) {
   auto directory_page =
       reinterpret_cast<HashTableDirectoryPage *>(bpm->NewPage(&directory_page_id, nullptr)->GetData());
 
-  directory_page->SetLocalDepth(0 ,2);
+  directory_page->SetLocalDepth(0, 2);
   directory_page->SetLocalDepth(2, 2);
   EXPECT_EQ(2, directory_page->GetSplitImageIndex(0));
   EXPECT_EQ(0, directory_page->GetSplitImageIndex(2));
@@ -205,7 +205,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageInsertTest) {
   auto bucket_page = reinterpret_cast<HashTableBucketPage<int, int, IntComparator> *>(
       bpm->NewPage(&bucket_page_id, nullptr)->GetData());
 
-  auto bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
+  int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
 
   EXPECT_TRUE(bucket_page->IsEmpty());
   EXPECT_FALSE(bucket_page->IsFull());
@@ -247,8 +247,6 @@ TEST(HashTablePageTest, DISABLED_BucketPageRemoveTest) {
   auto bucket_page = reinterpret_cast<HashTableBucketPage<int, int, IntComparator> *>(
       bpm->NewPage(&bucket_page_id, nullptr)->GetData());
 
-  auto bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
-
   EXPECT_FALSE(bucket_page->Remove(0, 0, IntComparator()));
 
   for (int i = 0; i < 10; i++) {
@@ -282,7 +280,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageGetValueTest) {
   auto bucket_page = reinterpret_cast<HashTableBucketPage<int, int, IntComparator> *>(
       bpm->NewPage(&bucket_page_id, nullptr)->GetData());
 
-  auto bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
+  int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
   std::vector<int> values;
 
   for (int i = 0; i < 3; i++) {
@@ -290,7 +288,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageGetValueTest) {
   }
   EXPECT_TRUE(bucket_page->GetValue(0, IntComparator(), &values));
   ASSERT_EQ(3, values.size());
-  for (int i = 0; i < values.size(); i++) {
+  for (int i = 0; i < static_cast<int>(values.size()); i++) {
     EXPECT_EQ(i, values[i]);
   }
   bucket_page->RemoveAt(1);
@@ -324,7 +322,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageInsertRemoveTest) {
   auto bucket_page = reinterpret_cast<HashTableBucketPage<int, int, IntComparator> *>(
       bpm->NewPage(&bucket_page_id, nullptr)->GetData());
 
-  auto bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
+  int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
 
   for (int i = 0; i < 5; i++) {
     bucket_page->Insert(i, i, IntComparator());
