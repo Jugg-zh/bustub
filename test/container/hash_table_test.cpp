@@ -22,9 +22,12 @@
 namespace bustub {
 
 // NOLINTNEXTLINE
-class FakeHash : public HashFunction<int> {
+template <>
+class HashFunction<int> {
  public:
-  uint64_t GetHash(int key) override { return static_cast<uint64_t>(key); }
+  virtual uint64_t GetHash(int key) {
+    return static_cast<uint64_t>(key);
+  }
 };
 
 void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
@@ -41,6 +44,12 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   ht->VerifyIntegrity();
 
   ht->Insert(nullptr, bucket_array_size * 2, bucket_array_size * 2);
+  EXPECT_EQ(2, ht->GetGlobalDepth());
+  ht->VerifyIntegrity();
+
+  for (int i = 5; i < bucket_array_size; i++) {
+    ht->Insert(nullptr, i + 2, i + 2);
+  }
   EXPECT_EQ(2, ht->GetGlobalDepth());
   ht->VerifyIntegrity();
 
@@ -150,7 +159,7 @@ TEST(HashTableTest, DISABLED_SampleTest) {
 TEST(HashTableTest, DISABLED_SplitTest) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
-  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), FakeHash());
+  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
 
   ProcessHashTable(&ht);
 
@@ -164,7 +173,7 @@ TEST(HashTableTest, DISABLED_SplitTest) {
 TEST(HashTableTest, DISABLED_MergeTestOne) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
-  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), FakeHash());
+  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
 
   int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
 
@@ -210,7 +219,7 @@ TEST(HashTableTest, DISABLED_MergeTestOne) {
 TEST(HashTableTest, DISABLED_MergeTestTwo) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
-  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), FakeHash());
+  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
 
   int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
 
@@ -239,7 +248,7 @@ TEST(HashTableTest, DISABLED_MergeTestTwo) {
 TEST(HashTableTest, DISABLED_MergeTestThree) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
-  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), FakeHash());
+  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
 
   int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
 
@@ -270,7 +279,7 @@ TEST(HashTableTest, DISABLED_MergeTestThree) {
 TEST(HashTableTest, DISABLED_MergeTestFour) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
-  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), FakeHash());
+  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
 
   int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
 
