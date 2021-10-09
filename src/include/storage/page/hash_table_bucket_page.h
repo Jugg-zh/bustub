@@ -98,8 +98,9 @@ class HashTableBucketPage {
    * bucket_idx is occupied.
    *
    * @param bucket_idx the index to update
+   * @param bit the bit that you want to set, 0 or 1
    */
-  void SetOccupied(uint32_t bucket_idx);
+  void SetOccupied(uint32_t bucket_idx, int bit);
 
   /**
    * Returns whether or not an index is readable (valid key/value pair)
@@ -114,8 +115,9 @@ class HashTableBucketPage {
    * bucket_idx is readable.
    *
    * @param bucket_idx the index to update
+   * @param bit the bit that you want to set, 0 or 1
    */
-  void SetReadable(uint32_t bucket_idx);
+  void SetReadable(uint32_t bucket_idx, int bit);
 
   /**
    * @return the number of readable elements, i.e. current size
@@ -137,12 +139,43 @@ class HashTableBucketPage {
    */
   void PrintBucket();
 
+  /**
+   * @return the length of occupied_ or readable_
+   */
+  int GetNumofChars() const { return (BUCKET_ARRAY_SIZE - 1) / 8 + 1; }
+
+  /**
+   * @return first is bucket_idx / 8, second is bucket_idx % 8
+   */
+  std::pair<int, int> GetLocation(uint32_t bucket_idx) const {
+    auto ret = std::pair<int, int>(0, 0);
+    ret.first = bucket_idx / 8;
+    ret.second = bucket_idx % 8;
+    return ret;
+  }
+
+  /**
+   * Set the bit at the specified position
+   *
+   * @param which which bit you want to update
+   * @param bit the bit yout want to set, 0 or 1
+   */
+  char GetMask(int which, int bit) const {
+    char mask = 0;
+    if (bit == 0) {
+      mask = static_cast<char>(~(1 << which));
+    } else {
+      mask = static_cast<char>(1 << which);
+    }
+    return mask;
+  }
+
  private:
   //  For more on BUCKET_ARRAY_SIZE see storage/page/hash_table_page_defs.h
   char occupied_[(BUCKET_ARRAY_SIZE - 1) / 8 + 1];
   // 0 if tombstone/brand new (never occupied), 1 otherwise.
   char readable_[(BUCKET_ARRAY_SIZE - 1) / 8 + 1];
-  MappingType array_[0];
+  MappingType array_[BUCKET_ARRAY_SIZE];
 };
 
 }  // namespace bustub

@@ -10,6 +10,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <random>
 #include <thread>  // NOLINT
 #include <vector>
 
@@ -23,7 +24,7 @@
 namespace bustub {
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_DirectoryPageSampleTest) {
+TEST(HashTablePageTest, DirectoryPageSampleTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
 
@@ -57,14 +58,12 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageSampleTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_DirectoryPageSizeTest) {
+TEST(HashTablePageTest, DirectoryPageSizeTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t directory_page_id = INVALID_PAGE_ID;
   auto directory_page =
       reinterpret_cast<HashTableDirectoryPage *>(bpm->NewPage(&directory_page_id, nullptr)->GetData());
-
-  EXPECT_EQ(0, directory_page->Size());
 
   directory_page->IncrGlobalDepth();
   EXPECT_EQ(2, directory_page->Size());
@@ -73,8 +72,6 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageSizeTest) {
 
   directory_page->DecrGlobalDepth();
   EXPECT_EQ(2, directory_page->Size());
-  directory_page->DecrGlobalDepth();
-  EXPECT_EQ(0, directory_page->Size());
 
   directory_page->VerifyIntegrity();
 
@@ -86,7 +83,7 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageSizeTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_DirectoryPageShrinkTest) {
+TEST(HashTablePageTest, DirectoryPageShrinkTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t directory_page_id = INVALID_PAGE_ID;
@@ -113,12 +110,16 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageShrinkTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_DirectoryPageSplitTest) {
+TEST(HashTablePageTest, DirectoryPageSplitTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t directory_page_id = INVALID_PAGE_ID;
   auto directory_page =
       reinterpret_cast<HashTableDirectoryPage *>(bpm->NewPage(&directory_page_id, nullptr)->GetData());
+
+  directory_page->IncrGlobalDepth();
+  directory_page->IncrGlobalDepth();
+  directory_page->IncrGlobalDepth();
 
   directory_page->SetLocalDepth(0, 2);
   directory_page->SetLocalDepth(2, 2);
@@ -127,10 +128,12 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageSplitTest) {
 
   directory_page->IncrLocalDepth(0);
   directory_page->IncrLocalDepth(2);
+  EXPECT_EQ(4, directory_page->GetLocalHighBit(0));
+  EXPECT_EQ(7, directory_page->GetLocalDepthMask(0));
+  EXPECT_EQ(4, directory_page->GetLocalHighBit(2));
+  EXPECT_EQ(7, directory_page->GetLocalDepthMask(2));
   EXPECT_EQ(4, directory_page->GetSplitImageIndex(0));
   EXPECT_EQ(6, directory_page->GetSplitImageIndex(2));
-
-  directory_page->VerifyIntegrity();
 
   bpm->UnpinPage(directory_page_id, true, nullptr);
   disk_manager->ShutDown();
@@ -140,7 +143,7 @@ TEST(HashTablePageTest, DISABLED_DirectoryPageSplitTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_BucketPageSampleTest) {
+TEST(HashTablePageTest, BucketPageSampleTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
 
@@ -198,7 +201,40 @@ TEST(HashTablePageTest, DISABLED_BucketPageSampleTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_BucketPageInsertTest) {
+TEST(HashTablePageTest, BucketPageSetBitTest) {
+  DiskManager *disk_manager = new DiskManager("test.db");
+  auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
+  page_id_t bucket_page_id = INVALID_PAGE_ID;
+  auto bucket_page = reinterpret_cast<HashTableBucketPage<int, int, IntComparator> *>(
+      bpm->NewPage(&bucket_page_id, nullptr)->GetData());
+
+  int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
+
+  for (int i = 0; i < 50; i++) {
+    int which = std::rand() % bucket_array_size;
+    bucket_page->SetOccupied(which, 1);
+    bucket_page->SetReadable(which, 1);
+    bucket_page->SetOccupied(which, 1);
+    bucket_page->SetReadable(which, 1);
+    EXPECT_TRUE(bucket_page->IsOccupied(which));
+    EXPECT_TRUE(bucket_page->IsReadable(which));
+    bucket_page->SetOccupied(which, 0);
+    bucket_page->SetReadable(which, 0);
+    bucket_page->SetOccupied(which, 0);
+    bucket_page->SetReadable(which, 0);
+    EXPECT_FALSE(bucket_page->IsOccupied(which));
+    EXPECT_FALSE(bucket_page->IsReadable(which));
+  }
+
+  bpm->UnpinPage(bucket_page_id, true, nullptr);
+  disk_manager->ShutDown();
+  remove("test.db");
+  delete disk_manager;
+  delete bpm;
+}
+
+// NOLINTNEXTLINE
+TEST(HashTablePageTest, BucketPageInsertTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t bucket_page_id = INVALID_PAGE_ID;
@@ -214,6 +250,8 @@ TEST(HashTablePageTest, DISABLED_BucketPageInsertTest) {
   // duplicate insert
   EXPECT_TRUE(bucket_page->Insert(0, 0, IntComparator()));
   EXPECT_TRUE(bucket_page->Insert(0, 1, IntComparator()));
+  EXPECT_EQ(2, bucket_page->NumReadable());
+  std::cout << bucket_page->ValueAt(1) << "\n";
   std::vector<int> values;
   bucket_page->GetValue(0, IntComparator(), &values);
   EXPECT_EQ(2, values.size());
@@ -240,7 +278,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageInsertTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_BucketPageRemoveTest) {
+TEST(HashTablePageTest, BucketPageRemoveTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t bucket_page_id = INVALID_PAGE_ID;
@@ -251,7 +289,11 @@ TEST(HashTablePageTest, DISABLED_BucketPageRemoveTest) {
 
   for (int i = 0; i < 10; i++) {
     bucket_page->Insert(i, i, IntComparator());
-    bucket_page->Insert(i, i * 2, IntComparator());
+    if (i == 0) {
+      bucket_page->Insert(i, 100, IntComparator());
+    } else {
+      bucket_page->Insert(i, i * 2, IntComparator());
+    }
   }
   EXPECT_EQ(20, bucket_page->NumReadable());
   EXPECT_TRUE(bucket_page->Remove(0, 0, IntComparator()));
@@ -273,7 +315,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageRemoveTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_BucketPageGetValueTest) {
+TEST(HashTablePageTest, BucketPageGetValueTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t bucket_page_id = INVALID_PAGE_ID;
@@ -315,7 +357,7 @@ TEST(HashTablePageTest, DISABLED_BucketPageGetValueTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTablePageTest, DISABLED_BucketPageInsertRemoveTest) {
+TEST(HashTablePageTest, BucketPageInsertRemoveTest) {
   DiskManager *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(5, disk_manager);
   page_id_t bucket_page_id = INVALID_PAGE_ID;

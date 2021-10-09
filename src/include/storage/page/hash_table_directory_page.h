@@ -186,6 +186,11 @@ class HashTableDirectoryPage {
    */
   void PrintDirectory();
 
+  /**
+   * Pow function for uint32_t
+   */
+  uint32_t Pow(uint32_t base, uint32_t power) const;
+
  private:
   page_id_t page_id_;
   lsn_t lsn_;

@@ -179,10 +179,8 @@ add_dependencies(check-clang-tidy gtest bustub_shared)                    # need
 ###########################################################
 # "make code-coverage"
 ###########################################################
-if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-        set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
-        include(CodeCoverage)
-        setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE_DIR}/test/*"
-                                                                        "${PROJECT_SOURCE_DIR}/third_party/*"
-                                                                        "${PROJECT_SOURCE_DIR}/build/*")      
-endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+include(CodeCoverage)
+setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE_DIR}/test/*"
+                                                                "${PROJECT_SOURCE_DIR}/third_party/*"
+                                                                "${PROJECT_SOURCE_DIR}/build/*")      
