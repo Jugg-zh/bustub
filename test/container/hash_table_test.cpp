@@ -25,9 +25,7 @@ namespace bustub {
 template <>
 class HashFunction<int> {
  public:
-  virtual uint64_t GetHash(int key) {
-    return static_cast<uint64_t>(key);
-  }
+  virtual uint64_t GetHash(int key) { return static_cast<uint64_t>(key); }
 };
 
 void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
@@ -36,8 +34,8 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   for (int i = 0; i < bucket_array_size; i++) {
     ht->Insert(nullptr, i * 2, i * 2);
   }
-  for (int i = 1; i < 5; i++) {
-    ht->Insert(nullptr, i + 2, i + 2);
+  for (int i = 1; i < 10; i += 2) {
+    ht->Insert(nullptr, i, i);
   }
 
   EXPECT_EQ(1, ht->GetGlobalDepth());
@@ -62,7 +60,7 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_SampleTest) {
+TEST(HashTableTest, SampleTest) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -156,7 +154,7 @@ TEST(HashTableTest, DISABLED_SampleTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_SplitTest) {
+TEST(HashTableTest, SplitTest) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());

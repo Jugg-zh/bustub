@@ -14,6 +14,7 @@
 
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "buffer/buffer_pool_manager.h"
@@ -119,7 +120,7 @@ class ExtendibleHashTable {
    * @param dir_page a pointer to the hash table's directory page
    * @return the bucket page_id corresponding to the input key
    */
-  inline uint32_t KeyToPageId(KeyType key, HashTableDirectoryPage *dir_page);
+  inline page_id_t KeyToPageId(KeyType key, HashTableDirectoryPage *dir_page);
 
   /**
    * Fetches the directory page from the buffer pool manager.
@@ -134,7 +135,7 @@ class ExtendibleHashTable {
    * @param bucket_page_id the page_id to fetch
    * @return a pointer to a bucket page
    */
-  HASH_TABLE_BUCKET_TYPE *FetchBucketPage(page_id_t bucket_page_id);
+  std::pair<Page *, HASH_TABLE_BUCKET_TYPE *> FetchBucketPage(page_id_t bucket_page_id);
 
   /**
    * Performs insertion with an optional bucket splitting.
@@ -160,6 +161,11 @@ class ExtendibleHashTable {
    * @param value the value that was removed
    */
   void Merge(Transaction *transaction, const KeyType &key, const ValueType &value);
+
+  /**
+   * Pow function for uint32_t
+   */
+  uint32_t Pow(uint32_t base, uint32_t power) const;
 
   // member variables
   page_id_t directory_page_id_;
