@@ -47,7 +47,7 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   EXPECT_EQ(2, ht->GetGlobalDepth());
   ht->VerifyIntegrity();
 
-  for (int i = 5; i < bucket_array_size; i++) {
+  for (int i = 5; i <= bucket_array_size; i++) {
     ht->Insert(nullptr, i + 2, i + 2);
   }
   EXPECT_EQ(2, ht->GetGlobalDepth());
