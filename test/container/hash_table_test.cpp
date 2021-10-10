@@ -10,6 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <ctime>
+#include <random>
 #include <thread>  // NOLINT
 #include <vector>
 
@@ -34,8 +36,8 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   for (int i = 0; i < bucket_array_size; i++) {
     ht->Insert(nullptr, i * 2, i * 2);
   }
-  for (int i = 1; i < 10; i += 2) {
-    ht->Insert(nullptr, i, i);
+  for (int i = 0; i < 10; i++) {
+    ht->Insert(nullptr, i * 2 + 1, i * 2 + 1);
   }
 
   EXPECT_EQ(1, ht->GetGlobalDepth());
@@ -45,8 +47,8 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   EXPECT_EQ(2, ht->GetGlobalDepth());
   ht->VerifyIntegrity();
 
-  for (int i = 5; i <= bucket_array_size; i++) {
-    ht->Insert(nullptr, i + 2, i + 2);
+  for (int i = 10; i <= bucket_array_size; i++) {
+    ht->Insert(nullptr, i * 2 + 1, i * 2 + 1);
   }
   EXPECT_EQ(2, ht->GetGlobalDepth());
   ht->VerifyIntegrity();
@@ -154,7 +156,7 @@ TEST(HashTableTest, SampleTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, SplitTest) {
+TEST(HashTableTest, SplitTestOne) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -168,7 +170,27 @@ TEST(HashTableTest, SplitTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_MergeTestOne) {
+TEST(HashTableTest, SplitTestTwo) {
+  auto *disk_manager = new DiskManager("test.db");
+  auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
+  ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
+
+  int bucket_array_size = (4 * PAGE_SIZE) / (4 * sizeof(std::pair<int, int>) + 1);
+
+  for (int i = 0; i <= bucket_array_size; i++) {
+    ht.Insert(nullptr, i * 4, i * 4);
+  }
+  EXPECT_EQ(3, ht.GetGlobalDepth());
+  ht.VerifyIntegrity();
+
+  disk_manager->ShutDown();
+  remove("test.db");
+  delete disk_manager;
+  delete bpm;
+}
+
+// NOLINTNEXTLINE
+TEST(HashTableTest, MergeTestOne) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -181,8 +203,8 @@ TEST(HashTableTest, DISABLED_MergeTestOne) {
   for (int i = 0; i < bucket_array_size; i++) {
     ht.Insert(nullptr, i * 2, i * 2);
   }
-  for (int i = 1; i < 5; i++) {
-    ht.Insert(nullptr, i + 2, i + 2);
+  for (int i = 1; i < 10; i += 2) {
+    ht.Insert(nullptr, i, i);
   }
 
   EXPECT_EQ(1, ht.GetGlobalDepth());
@@ -214,7 +236,7 @@ TEST(HashTableTest, DISABLED_MergeTestOne) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_MergeTestTwo) {
+TEST(HashTableTest, MergeTestTwo) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -228,12 +250,13 @@ TEST(HashTableTest, DISABLED_MergeTestTwo) {
   }
   EXPECT_EQ(3, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
+  std::cout << "cp1\n";
 
-  for (int i = 0; i < bucket_array_size / 2; i++) {
+  for (int i = 0; i < bucket_array_size; i++) {
     int key = 2 * (bucket_array_size + 1 + 2 * i);
     ht.Remove(nullptr, key, key);
   }
-  EXPECT_EQ(1, ht.GetGlobalDepth());
+  EXPECT_EQ(2, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
 
   disk_manager->ShutDown();
@@ -243,7 +266,7 @@ TEST(HashTableTest, DISABLED_MergeTestTwo) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_MergeTestThree) {
+TEST(HashTableTest, MergeTestThree) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -258,7 +281,7 @@ TEST(HashTableTest, DISABLED_MergeTestThree) {
   EXPECT_EQ(3, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
 
-  for (int i = 0; i < bucket_array_size / 2; i++) {
+  for (int i = 0; i < bucket_array_size; i++) {
     int key = 2 * (bucket_array_size + 1 + 2 * i);
     if ((key & 7) == 2) {
       ht.Remove(nullptr, key, key);
@@ -274,7 +297,7 @@ TEST(HashTableTest, DISABLED_MergeTestThree) {
 }
 
 // NOLINTNEXTLINE
-TEST(HashTableTest, DISABLED_MergeTestFour) {
+TEST(HashTableTest, MergeTestFour) {
   auto *disk_manager = new DiskManager("test.db");
   auto *bpm = new BufferPoolManagerInstance(50, disk_manager);
   ExtendibleHashTable<int, int, IntComparator> ht("blah", bpm, IntComparator(), HashFunction<int>());
@@ -289,7 +312,7 @@ TEST(HashTableTest, DISABLED_MergeTestFour) {
   EXPECT_EQ(3, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
 
-  for (int i = 0; i < bucket_array_size / 2; i++) {
+  for (int i = 0; i < bucket_array_size; i++) {
     int key = 2 * (bucket_array_size + 1 + 2 * i);
     if ((key & 7) == 6) {
       ht.Remove(nullptr, key, key);

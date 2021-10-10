@@ -163,14 +163,15 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
   table_latch_.WLock();
   auto success = false;
   auto inserted = false;
+  auto is_growing = false;
 
   // fetch page
   auto dir_page_data = FetchDirectoryPage();
-  auto old_global_depth = dir_page_data->GetGlobalDepth();
 
   // insert the key-value pair into the corresponding bucket.
   // If the bucket is full, split until it is successfully inserted into the bucket.
   while (!inserted) {
+    auto old_global_depth = dir_page_data->GetGlobalDepth();
     auto bucket_idx = KeyToDirectoryIndex(key, dir_page_data);
     auto bucket_page_id = KeyToPageId(key, dir_page_data);
     auto [bucket_page, bucket_page_data] = FetchBucketPage(bucket_page_id);
@@ -179,6 +180,7 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
       // first check whether we need to grow the directory
       if (dir_page_data->GetLocalDepth(bucket_idx) == dir_page_data->GetGlobalDepth()) {
         dir_page_data->IncrGlobalDepth();
+        is_growing = true;
       }
 
       // second find the bucket pair, and update them
@@ -231,7 +233,6 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
   }
 
   // unpin directory page
-  auto is_growing = (dir_page_data->GetGlobalDepth() > old_global_depth);
   buffer_pool_manager_->UnpinPage(directory_page_id_, is_growing);
 
   table_latch_.WUnlock();
@@ -256,7 +257,17 @@ bool HASH_TABLE_TYPE::Remove(Transaction *transaction, const KeyType &key, const
 
   // if the bucket is empty, call Merge().
   // remeber release locks and unpin pages!
-  // TODO(qds): call Merge()
+  if (success && bucket_page_data->IsEmpty()) {
+    // unpin pages
+    buffer_pool_manager_->UnpinPage(bucket_page_id, success);
+    buffer_pool_manager_->UnpinPage(directory_page_id_, false);
+
+    // release write latch
+    bucket_page->WUnlatch();
+    table_latch_.RUnlock();
+    Merge(transaction, key, value);
+    return success;
+  }
 
   // unpin pages
   buffer_pool_manager_->UnpinPage(directory_page_id_, false);
@@ -273,7 +284,46 @@ bool HASH_TABLE_TYPE::Remove(Transaction *transaction, const KeyType &key, const
  * MERGE
  *****************************************************************************/
 template <typename KeyType, typename ValueType, typename KeyComparator>
-void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const ValueType &value) {}
+void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const ValueType &value) {
+  table_latch_.WLock();
+
+  // fetch directory page
+  auto dir_page_data = FetchDirectoryPage();
+  auto bucket_idx = KeyToDirectoryIndex(key, dir_page_data);
+
+  auto is_directory_change = false;
+  auto old_local_depth = dir_page_data->GetLocalDepth(bucket_idx);
+  if (old_local_depth > 1) {
+    is_directory_change = true;
+    auto split_bucket_idx = dir_page_data->GetSplitImageIndex(bucket_idx);
+
+    // first, maybe we need to modify the pointing.
+    if (dir_page_data->GetLocalDepth(split_bucket_idx) == old_local_depth) {
+      dir_page_data->DecrLocalDepth(bucket_idx);
+      dir_page_data->DecrLocalDepth(split_bucket_idx);
+      dir_page_data->SetBucketPageId(bucket_idx, dir_page_data->GetBucketPageId(split_bucket_idx));
+    }
+
+    // second, maybe we need to shrink the directory.
+    if (dir_page_data->CanShrink()) {
+      dir_page_data->DecrGlobalDepth();
+    }
+
+    // third, update directory page.
+    for (uint32_t i = 0; i < dir_page_data->Size(); i++) {
+      auto redirect_bucket_idx = (i & dir_page_data->GetLocalDepthMask(i));
+      if (redirect_bucket_idx == bucket_idx) {
+        dir_page_data->SetBucketPageId(i, dir_page_data->GetBucketPageId(redirect_bucket_idx));
+        dir_page_data->SetLocalDepth(i, dir_page_data->GetLocalDepth(redirect_bucket_idx));
+      }
+    }
+  }
+
+  // unpin directory page
+  buffer_pool_manager_->UnpinPage(directory_page_id_, is_directory_change);
+
+  table_latch_.WUnlock();
+}
 
 /*****************************************************************************
  * GETGLOBALDEPTH - DO NOT TOUCH
