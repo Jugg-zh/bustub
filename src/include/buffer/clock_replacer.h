@@ -46,7 +46,17 @@ class ClockReplacer : public Replacer {
   size_t Size() override;
 
  private:
-  // TODO(student): implement me!
+  /**
+   * Check if the page is already in LRUReplacer.
+   * @return true when the page is already in LRUReplacer, otherwise false.
+   */
+  bool IsInReplacer(frame_id_t frame_id);
+
+  /** A linked list of pages waiting to be evicted. */
+  std::list<frame_id_t> wait_list_{};
+
+  /** The iterator in this vector points to wait_list_. */
+  std::vector<std::list<frame_id_t>::iterator> page2iter_;
 };
 
 }  // namespace bustub
