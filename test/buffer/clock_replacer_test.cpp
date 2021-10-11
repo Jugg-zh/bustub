@@ -57,6 +57,8 @@ TEST(ClockReplacerTest, SampleTest) {
   EXPECT_EQ(6, value);
   clock_replacer.Victim(&value);
   EXPECT_EQ(4, value);
+  EXPECT_FALSE(clock_replacer.Victim(&value));
+  EXPECT_EQ(INVALID_PAGE_ID, value);
 }
 
 }  // namespace bustub
