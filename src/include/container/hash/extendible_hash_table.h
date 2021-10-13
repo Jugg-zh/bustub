@@ -132,7 +132,7 @@ class ExtendibleHashTable {
    * Fetches the a bucket page from the buffer pool manager using the bucket's page_id.
    *
    * @param bucket_page_id the page_id to fetch
-   * @return a pointer to a bucket page
+   * @return a pair contains a pointer to page and a pointer to bucket page
    */
   std::pair<Page *, HASH_TABLE_BUCKET_TYPE *> FetchBucketPage(page_id_t bucket_page_id);
 

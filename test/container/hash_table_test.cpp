@@ -250,7 +250,6 @@ TEST(HashTableTest, MergeTestTwo) {
   }
   EXPECT_EQ(3, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
-  std::cout << "cp1\n";
 
   for (int i = 0; i < bucket_array_size; i++) {
     int key = 2 * (bucket_array_size + 1 + 2 * i);
