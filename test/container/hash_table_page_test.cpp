@@ -251,7 +251,7 @@ TEST(HashTablePageTest, BucketPageInsertTest) {
   EXPECT_TRUE(bucket_page->Insert(0, 0, IntComparator()));
   EXPECT_TRUE(bucket_page->Insert(0, 1, IntComparator()));
   EXPECT_EQ(2, bucket_page->NumReadable());
-  std::cout << bucket_page->ValueAt(1) << "\n";
+
   std::vector<int> values;
   bucket_page->GetValue(0, IntComparator(), &values);
   EXPECT_EQ(2, values.size());
