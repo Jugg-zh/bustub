@@ -59,6 +59,20 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   }
   EXPECT_EQ(3, ht->GetGlobalDepth());
   ht->VerifyIntegrity();
+
+  std::vector<int> result;
+  for (int i = 0; i < bucket_array_size; i++) {
+    EXPECT_TRUE(ht->GetValue(nullptr, i * 2, &result));
+    EXPECT_EQ(1, result.size());
+  }
+  for (int i = 0; i <= bucket_array_size; i++) {
+    EXPECT_TRUE(ht->GetValue(nullptr, i * 2 + 1, &result));
+    EXPECT_EQ(1, result.size());
+  }
+  for (int i = 0; i < bucket_array_size; i++) {
+    EXPECT_TRUE(ht->GetValue(nullptr, 2 * (bucket_array_size + 1 + 2 * i), &result));
+    EXPECT_EQ(1, result.size());
+  }
 }
 
 // NOLINTNEXTLINE
@@ -182,6 +196,12 @@ TEST(HashTableTest, SplitTestTwo) {
   }
   EXPECT_EQ(3, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
+
+  std::vector<int> result;
+  for (int i = 0; i <= bucket_array_size; i++) {
+    EXPECT_TRUE(ht.GetValue(nullptr, i * 4, &result));
+    EXPECT_EQ(1, result.size());
+  }
 
   disk_manager->ShutDown();
   remove("test.db");

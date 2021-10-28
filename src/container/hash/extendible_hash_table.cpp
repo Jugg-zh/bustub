@@ -42,6 +42,11 @@ HASH_TABLE_TYPE::ExtendibleHashTable(const std::string &name, BufferPoolManager 
   // remeber update directory page
   dir_page_data->IncrGlobalDepth();
   dir_page_data->SetPageId(directory_page_id_);
+
+  // unpin the pages
+  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
+  buffer_pool_manager_->UnpinPage(bucket_0_page_id, false);
+  buffer_pool_manager_->UnpinPage(bucket_1_page_id, false);
 }
 
 /*****************************************************************************
@@ -103,8 +108,8 @@ bool HASH_TABLE_TYPE::GetValue(Transaction *transaction, const KeyType &key, std
   auto success = bucket_page_data->GetValue(key, comparator_, result);
 
   // unpin pages
-  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
   buffer_pool_manager_->UnpinPage(bucket_page_id, false);
+  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
 
   // release read latch
   bucket_page->RUnlatch();
@@ -132,8 +137,8 @@ bool HASH_TABLE_TYPE::Insert(Transaction *transaction, const KeyType &key, const
   // remeber release locks and unpin pages!
   if (bucket_page_data->IsFull()) {
     // unpin pages
-    buffer_pool_manager_->UnpinPage(directory_page_id_, false);
     buffer_pool_manager_->UnpinPage(bucket_page_id, false);
+    buffer_pool_manager_->UnpinPage(directory_page_id_, false);
 
     // release write latch
     bucket_page->WUnlatch();
@@ -146,8 +151,8 @@ bool HASH_TABLE_TYPE::Insert(Transaction *transaction, const KeyType &key, const
   auto success = bucket_page_data->Insert(key, value, comparator_);
 
   // unpin pages
-  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
   buffer_pool_manager_->UnpinPage(bucket_page_id, success);
+  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
 
   // release write latch
   bucket_page->WUnlatch();
@@ -158,8 +163,6 @@ bool HASH_TABLE_TYPE::Insert(Transaction *transaction, const KeyType &key, const
 
 template <typename KeyType, typename ValueType, typename KeyComparator>
 bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, const ValueType &value) {
-  // There is no need to lock the page,
-  // because the global write lock will serialize all executions.
   table_latch_.WLock();
   auto success = false;
   auto inserted = false;
@@ -175,6 +178,9 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
     auto bucket_idx = KeyToDirectoryIndex(key, dir_page_data);
     auto bucket_page_id = KeyToPageId(key, dir_page_data);
     auto [bucket_page, bucket_page_data] = FetchBucketPage(bucket_page_id);
+
+    // acquire write latch
+    bucket_page->WLatch();
 
     if (bucket_page_data->IsFull()) {
       // first check whether we need to grow the directory
@@ -210,7 +216,6 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
       }
 
       // unpin split page
-      //! The split bucket may is empty, not test yet.
       buffer_pool_manager_->UnpinPage(split_page_id, true);
 
       // redirect the reset of directory indexes.
@@ -230,6 +235,9 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
 
     // unpin bucket page
     buffer_pool_manager_->UnpinPage(bucket_page_id, true);
+
+    // release write latch
+    bucket_page->WUnlatch();
   }
 
   // unpin directory page
@@ -270,8 +278,8 @@ bool HASH_TABLE_TYPE::Remove(Transaction *transaction, const KeyType &key, const
   }
 
   // unpin pages
-  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
   buffer_pool_manager_->UnpinPage(bucket_page_id, success);
+  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
 
   // release write latch
   bucket_page->WUnlatch();
