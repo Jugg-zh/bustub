@@ -72,6 +72,37 @@ TEST_F(DiskManagerTest, ReadWriteLogTest) {
   dm.ShutDown();
 }
 
+// NONLINTNEXTLINE
+TEST_F(DiskManagerTest, SimpleTestOne) {
+  char buf[16] = {0};
+  char data[16] = {0};
+  std::string db_file("badfile");
+  auto dm = DiskManager(db_file);
+  EXPECT_EQ(0, dm.GetNumWrites());
+  EXPECT_EQ(0, dm.GetNumFlushes());
+  EXPECT_FALSE(dm.GetFlushState());
+
+  std::strncpy(data, "A test string.", sizeof(data));
+  dm.WritePage(0, data);
+  dm.ReadPage(0, buf);
+  dm.ReadLog(buf, sizeof(buf), 0);
+
+  dm.ShutDown();
+}
+
+// NOLINTNEXTLINE
+TEST_F(DiskManagerTest, SimpleTestTwo) {
+  char buf[16] = {0};
+  char data[16] = {0};
+  std::string db_file("test.db");
+  auto dm = DiskManager(db_file);
+  std::strncpy(data, "A test string.", sizeof(data));
+
+  dm.ReadPage(1, buf);     // Read page from empty file
+  dm.WriteLog(data, 0);    // Write empty logs
+  dm.ReadLog(buf, 32, 0);  // Exceed read logs
+}
+
 // NOLINTNEXTLINE
 TEST_F(DiskManagerTest, ThrowBadFileTest) { EXPECT_THROW(DiskManager("dev/null\\/foo/bar/baz/test.db"), Exception); }
 

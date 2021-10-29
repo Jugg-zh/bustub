@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "common/exception.h"
+#include "common/logger.h"
 #include "common/macros.h"
 #include "type/type.h"
 
@@ -82,6 +83,9 @@ class Column {
   /** @return the expression used to create this column */
   const AbstractExpression *GetExpr() const { return expr_; }
 
+  /** @return the size in bytes of column_type_ */
+  uint8_t GetTypeSize() { return TypeSize(column_type_); }
+
  private:
   /**
    * Return the size in bytes of the type.
@@ -106,7 +110,8 @@ class Column {
         // TODO(Amadou): Confirm this.
         return 12;
       default: {
-        UNREACHABLE("Cannot get size of invalid type");
+        LOG_DEBUG("Cannot get size of invalid type");
+        return 0;
       }
     }
   }

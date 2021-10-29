@@ -160,6 +160,13 @@ void TableGenerator::GenerateTestTables() {
       {"empty_table3",
        0,
        {{"colA", TypeId::BIGINT, false, Dist::Serial, 0, 0}, {"colB", TypeId::INTEGER, false, Dist::Uniform, 0, 9}}},
+
+      // the other type table
+      {"varchar_table",
+       0,
+       {{"colA", TypeId::VARCHAR, false, Dist::Serial, 0, 0},
+        {"colB", TypeId::TINYINT, false, Dist::Serial, 0, 0},
+        {"colC", TypeId::DECIMAL, false, Dist::Serial, 0, 0}}},
   };
 
   for (auto &table_meta : insert_meta) {
