@@ -161,10 +161,6 @@ void HASH_TABLE_BUCKET_TYPE::PrintBucket() {
   uint32_t taken = 0;
   uint32_t free = 0;
   for (size_t bucket_idx = 0; bucket_idx < BUCKET_ARRAY_SIZE; bucket_idx++) {
-    if (!IsOccupied(bucket_idx)) {
-      break;
-    }
-
     size++;
 
     if (IsReadable(bucket_idx)) {

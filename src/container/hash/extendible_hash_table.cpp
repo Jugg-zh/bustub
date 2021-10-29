@@ -44,7 +44,7 @@ HASH_TABLE_TYPE::ExtendibleHashTable(const std::string &name, BufferPoolManager 
   dir_page_data->SetPageId(directory_page_id_);
 
   // unpin the pages
-  buffer_pool_manager_->UnpinPage(directory_page_id_, false);
+  buffer_pool_manager_->UnpinPage(directory_page_id_, true);
   buffer_pool_manager_->UnpinPage(bucket_0_page_id, false);
   buffer_pool_manager_->UnpinPage(bucket_1_page_id, false);
 }
@@ -168,7 +168,7 @@ bool HASH_TABLE_TYPE::SplitInsert(Transaction *transaction, const KeyType &key, 
   auto inserted = false;
   auto is_growing = false;
 
-  // fetch page
+  // fetch directory page
   auto dir_page_data = FetchDirectoryPage();
 
   // insert the key-value pair into the corresponding bucket.
@@ -265,7 +265,7 @@ bool HASH_TABLE_TYPE::Remove(Transaction *transaction, const KeyType &key, const
 
   // if the bucket is empty, call Merge().
   // remeber release locks and unpin pages!
-  if (success && bucket_page_data->IsEmpty()) {
+  if (bucket_page_data->IsEmpty()) {
     // unpin pages
     buffer_pool_manager_->UnpinPage(bucket_page_id, success);
     buffer_pool_manager_->UnpinPage(directory_page_id_, false);
@@ -297,19 +297,59 @@ void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const 
 
   // fetch directory page
   auto dir_page_data = FetchDirectoryPage();
+
+  for (uint32_t i = 0; i < dir_page_data->Size(); i++) {
+    auto [bucket_page, bucket_page_data] = FetchBucketPage(i);
+    bucket_page->WLatch();
+    bucket_page->WUnlatch();
+    std::cout << "Bucket Id: " << i << "\n";
+    bucket_page_data->PrintBucket();
+  }
+
   auto bucket_idx = KeyToDirectoryIndex(key, dir_page_data);
+  auto [bucket_page, bucket_page_data] = FetchBucketPage(bucket_idx);
+
+  bucket_page->WLatch();
+  bucket_page->WUnlatch();
 
   auto is_directory_change = false;
   auto old_local_depth = dir_page_data->GetLocalDepth(bucket_idx);
-  if (old_local_depth > 1) {
+  if (old_local_depth > 1 && bucket_page_data->IsEmpty()) {
     is_directory_change = true;
     auto split_bucket_idx = dir_page_data->GetSplitImageIndex(bucket_idx);
+    auto [split_bucket_page, split_bucket_page_data] = FetchBucketPage(split_bucket_idx);
+
+    split_bucket_page->WLatch();
+    split_bucket_page->WUnlatch();
+
+    LOG_DEBUG("Merge");
+
+    dir_page_data->PrintDirectory();
+
+    std::cout << "Bucket ID: " << bucket_idx << " Bucket Page ID: " << dir_page_data->GetBucketPageId(bucket_idx)
+              << "\n";
+    bucket_page_data->PrintBucket();
+
+    std::cout << "Split Bucket ID: " << split_bucket_idx
+              << " Split Bucket Page ID: " << dir_page_data->GetBucketPageId(split_bucket_idx) << "\n";
+    split_bucket_page_data->PrintBucket();
 
     // first, maybe we need to modify the pointing.
     if (dir_page_data->GetLocalDepth(split_bucket_idx) == old_local_depth) {
       dir_page_data->DecrLocalDepth(bucket_idx);
       dir_page_data->DecrLocalDepth(split_bucket_idx);
+      auto old_bucket_page_id = dir_page_data->GetBucketPageId(bucket_idx);
       dir_page_data->SetBucketPageId(bucket_idx, dir_page_data->GetBucketPageId(split_bucket_idx));
+      for (uint32_t i = 0; i < dir_page_data->Size(); i++) {
+        if (i != bucket_idx && i != split_bucket_idx) {
+          auto cur_bucket_page_id = dir_page_data->GetBucketPageId(i);
+          if (cur_bucket_page_id == old_bucket_page_id ||
+              cur_bucket_page_id == dir_page_data->GetBucketPageId(split_bucket_idx)) {
+            dir_page_data->DecrLocalDepth(i);
+            dir_page_data->SetBucketPageId(i, dir_page_data->GetBucketPageId(split_bucket_idx));
+          }
+        }
+      }
     }
 
     // second, maybe we need to shrink the directory.
@@ -317,14 +357,7 @@ void HASH_TABLE_TYPE::Merge(Transaction *transaction, const KeyType &key, const 
       dir_page_data->DecrGlobalDepth();
     }
 
-    // third, update directory page.
-    for (uint32_t i = 0; i < dir_page_data->Size(); i++) {
-      auto redirect_bucket_idx = (i & dir_page_data->GetLocalDepthMask(i));
-      if (redirect_bucket_idx == bucket_idx) {
-        dir_page_data->SetBucketPageId(i, dir_page_data->GetBucketPageId(redirect_bucket_idx));
-        dir_page_data->SetLocalDepth(i, dir_page_data->GetLocalDepth(redirect_bucket_idx));
-      }
-    }
+    dir_page_data->PrintDirectory();
   }
 
   // unpin directory page

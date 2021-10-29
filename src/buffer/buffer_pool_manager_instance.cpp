@@ -84,6 +84,7 @@ Page *BufferPoolManagerInstance::NewPgImp(page_id_t *page_id) {
   page_table_[pages_[frame_id].page_id_] = frame_id;
 
   *page_id = pages_[frame_id].GetPageId();
+  memset(pages_[frame_id].GetData(), 0, PAGE_SIZE);
   return &pages_[frame_id];
 }
 
@@ -149,6 +150,7 @@ bool BufferPoolManagerInstance::UnpinPgImp(page_id_t page_id, bool is_dirty) {
   pages_[frame_id].is_dirty_ = is_dirty;
   if (--pages_[frame_id].pin_count_ == 0) {
     replacer_->Unpin(frame_id);
+    FlushPg(page_id);
   }
   return true;
 }

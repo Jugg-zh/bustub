@@ -50,6 +50,7 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   for (int i = 10; i <= bucket_array_size; i++) {
     ht->Insert(nullptr, i * 2 + 1, i * 2 + 1);
   }
+  ht->Insert(nullptr, bucket_array_size * 2, bucket_array_size * 2);
   EXPECT_EQ(2, ht->GetGlobalDepth());
   ht->VerifyIntegrity();
 
@@ -243,7 +244,7 @@ TEST(HashTableTest, MergeTestOne) {
   EXPECT_EQ(2, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
 
-  for (int i = bucket_array_size / 2; i < bucket_array_size; i++) {
+  for (int i = bucket_array_size / 2; i <= bucket_array_size; i++) {
     ht.Remove(nullptr, i * 2, i * 2);
   }
   EXPECT_EQ(1, ht.GetGlobalDepth());
@@ -302,9 +303,7 @@ TEST(HashTableTest, MergeTestThree) {
 
   for (int i = 0; i < bucket_array_size; i++) {
     int key = 2 * (bucket_array_size + 1 + 2 * i);
-    if ((key & 7) == 2) {
-      ht.Remove(nullptr, key, key);
-    }
+    ht.Remove(nullptr, key, key);
   }
   EXPECT_EQ(2, ht.GetGlobalDepth());
   ht.VerifyIntegrity();
