@@ -163,6 +163,6 @@ class BufferPoolManagerInstance : public BufferPoolManager {
    * @param page_id the page id of the page to be found.
    * @return the frame id of the page, or -1 if not found.
    */
-  frame_id_t FindPage(page_id_t page_id) const;
+  frame_id_t FindPage(page_id_t page_id);
 };
 }  // namespace bustub

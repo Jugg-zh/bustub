@@ -171,7 +171,6 @@ frame_id_t BufferPoolManagerInstance::FindFreshPage() {
   if (!free_list_.empty()) {
     frame_id = free_list_.front();
     free_list_.pop_front();
-    // pages_[frame_id].is_dirty_ = true;
     return frame_id;
   }
   if (replacer_->Victim(&frame_id)) {
@@ -179,7 +178,6 @@ frame_id_t BufferPoolManagerInstance::FindFreshPage() {
     FlushPg(page_id);
     page_table_.erase(page_id);
     pages_[frame_id].is_dirty_ = false;
-    // memset(pages_[frame_id].GetData(), 0, PAGE_SIZE);
     return frame_id;
   }
   return -1;
@@ -192,7 +190,7 @@ void BufferPoolManagerInstance::FlushPg(page_id_t page_id) {
   }
 }
 
-frame_id_t BufferPoolManagerInstance::FindPage(page_id_t page_id) const {
+frame_id_t BufferPoolManagerInstance::FindPage(page_id_t page_id) {
   auto iter = page_table_.find(page_id);
   if (iter != page_table_.cend()) {
     return iter->second;
