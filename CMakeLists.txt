@@ -183,4 +183,6 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include(CodeCoverage)
 setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE_DIR}/test/*"
                                                                 "${PROJECT_SOURCE_DIR}/third_party/*"
-                                                                "${PROJECT_SOURCE_DIR}/build/*")      
+                                                                "${PROJECT_SOURCE_DIR}/build/*"
+                                                                "${PROJECT_SOURCE_DIR}/src/include/type/*"
+                                                                "${PROJECT_SOURCE_DIR}/src/type/*")      
