@@ -36,31 +36,86 @@ INDEX_TEMPLATE_ARGUMENTS
 class BPlusTreeInternalPage : public BPlusTreePage {
  public:
   // must call initialize method after "create" a new node
-  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = INTERNAL_PAGE_SIZE);
+  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = INTERNAL_PAGE_SIZE) {
+    page_id_ = page_id;
+    parent_page_id_ = parent_id;
+    max_size_ = max_size;
+  }
 
-  KeyType KeyAt(int index) const;
-  void SetKeyAt(int index, const KeyType &key);
-  int ValueIndex(const ValueType &value) const;
-  ValueType ValueAt(int index) const;
+  KeyType KeyAt(int index) const { return array_[index].first; }
 
-  ValueType Lookup(const KeyType &key, const KeyComparator &comparator) const;
-  void PopulateNewRoot(const ValueType &old_value, const KeyType &new_key, const ValueType &new_value);
-  int InsertNodeAfter(const ValueType &old_value, const KeyType &new_key, const ValueType &new_value);
-  void Remove(int index);
-  ValueType RemoveAndReturnOnlyChild();
+  void SetKeyAt(int index, const KeyType &key) { array_[index].first = key; }
+
+  int ValueIndex(const ValueType &value) const {
+    int index = 0;
+    while (index < size_) {
+      if (array_[index].second == value) {
+        break;
+      }
+      index++;
+    }
+    return index;
+  }
+
+  ValueType ValueAt(int index) const { return array_[index].second; }
+
+  ValueType Lookup(const KeyType &key, const KeyComparator &comparator) const {
+    page_id_t page_id{INVALID_PAGE_ID};
+    for (int i = 0; i < size_; i++) {
+      if (comparator(key, array_[i].first) == 0) {
+        page_id = array_[i].second;
+        break;
+      }
+    }
+    return page_id;
+  }
+
+  void PopulateNewRoot(const ValueType &old_value, const KeyType &new_key, const ValueType &new_value) {
+    array_[0].second = old_value;
+    array_[1].first = new_key;
+    array_[1].second = new_value;
+    size_ = 2;
+  }
+
+  int InsertNodeAfter(const ValueType &old_value, const KeyType &new_key, const ValueType &new_value) {
+    int index = 0;
+    while (index < size_) {
+      if (old_value == array_[index].second) {
+        break;
+      }
+      index++;
+    }
+    index++;
+    for (int i = size_ - 1; i >= index; i--) {
+      array_[i + 1] = array_[i];
+    }
+    array_[index].first = new_key;
+    array_[index].second = new_value;
+    size_++;
+    return size_;
+  }
+
+  void Remove(int index) {
+    for (int i = index; i < size_; i++) {
+      array_[i] = array_[i + 1];
+    }
+    size_--;
+  }
+
+  ValueType RemoveAndReturnOnlyChild() {
+    size_ = 1;
+    return array_[1].second;
+  }
 
   // Split and Merge utility methods
-  void MoveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middle_key, BufferPoolManager *buffer_pool_manager);
-  void MoveHalfTo(BPlusTreeInternalPage *recipient, BufferPoolManager *buffer_pool_manager);
+  void MoveAllTo(BPlusTreeInternalPage *recipient, const KeyType &middle_key, BufferPoolManager *buffer_pool_manager) {}
+  void MoveHalfTo(BPlusTreeInternalPage *recipient, BufferPoolManager *buffer_pool_manager) {}
   void MoveFirstToEndOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
-                        BufferPoolManager *buffer_pool_manager);
+                        BufferPoolManager *buffer_pool_manager) {}
   void MoveLastToFrontOf(BPlusTreeInternalPage *recipient, const KeyType &middle_key,
-                         BufferPoolManager *buffer_pool_manager);
+                         BufferPoolManager *buffer_pool_manager) {}
 
  private:
-  void CopyNFrom(MappingType *items, int size, BufferPoolManager *buffer_pool_manager);
-  void CopyLastFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager);
-  void CopyFirstFrom(const MappingType &pair, BufferPoolManager *buffer_pool_manager);
-  MappingType array_[0];
+  MappingType array_[INTERNAL_PAGE_SIZE];
 };
 }  // namespace bustub

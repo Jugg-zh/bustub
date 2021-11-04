@@ -44,30 +44,77 @@ class BPlusTreeLeafPage : public BPlusTreePage {
  public:
   // After creating a new leaf page from buffer pool, must call initialize
   // method to set default values
-  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = LEAF_PAGE_SIZE);
+  void Init(page_id_t page_id, page_id_t parent_id = INVALID_PAGE_ID, int max_size = LEAF_PAGE_SIZE) {
+    page_id_ = page_id;
+    parent_page_id_ = parent_id;
+    max_size_ = max_size;
+  }
+
   // helper methods
-  page_id_t GetNextPageId() const;
-  void SetNextPageId(page_id_t next_page_id);
-  KeyType KeyAt(int index) const;
-  int KeyIndex(const KeyType &key, const KeyComparator &comparator) const;
-  const MappingType &GetItem(int index);
+  page_id_t GetNextPageId() const { return next_page_id_; }
+
+  void SetNextPageId(page_id_t next_page_id) { next_page_id_ = next_page_id; }
+
+  KeyType KeyAt(int index) const { return array_[index].first; }
+
+  int KeyIndex(const KeyType &key, const KeyComparator &comparator) const {
+    for (int i = 0; i < size_; i++) {
+      if (comparator(key, array_[i].first) == 0) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  const MappingType &GetItem(int index) { return array_[index]; }
 
   // insert and delete methods
-  int Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator);
-  bool Lookup(const KeyType &key, ValueType *value, const KeyComparator &comparator) const;
-  int RemoveAndDeleteRecord(const KeyType &key, const KeyComparator &comparator);
+  int Insert(const KeyType &key, const ValueType &value, const KeyComparator &comparator) {
+    for (int i = 0; i < size_; i++) {
+      if (comparator(key, array_[i].first) == 0) {
+        return size_;
+      }
+    }
+    array_[size_].first = key;
+    array_[size_].second = value;
+    size_++;
+    return size_;
+  }
+
+  bool Lookup(const KeyType &key, ValueType *value, const KeyComparator &comparator) const {
+    for (int i = 0; i < size_; i++) {
+      if (comparator(key, array_[i].first) == 0) {
+        *value = array_[i].second;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  int RemoveAndDeleteRecord(const KeyType &key, const KeyComparator &comparator) {
+    for (int i = 0; i < size_; i++) {
+      if (comparator(key, array_[i].first) == 0) {
+        for (int j = i; j < size_; j++) {
+          array_[j] = array_[j + 1];
+          size_--;
+          break;
+        }
+      }
+    }
+    return size_;
+  }
 
   // Split and Merge utility methods
-  void MoveHalfTo(BPlusTreeLeafPage *recipient);
-  void MoveAllTo(BPlusTreeLeafPage *recipient);
-  void MoveFirstToEndOf(BPlusTreeLeafPage *recipient);
-  void MoveLastToFrontOf(BPlusTreeLeafPage *recipient);
+  void MoveHalfTo(BPlusTreeLeafPage *recipient) {}
+
+  void MoveAllTo(BPlusTreeLeafPage *recipient) {}
+
+  void MoveFirstToEndOf(BPlusTreeLeafPage *recipient) {}
+
+  void MoveLastToFrontOf(BPlusTreeLeafPage *recipient) {}
 
  private:
-  void CopyNFrom(MappingType *items, int size);
-  void CopyLastFrom(const MappingType &item);
-  void CopyFirstFrom(const MappingType &item);
-  page_id_t next_page_id_;
-  MappingType array_[0];
+  page_id_t next_page_id_{INVALID_PAGE_ID};
+  MappingType array_[LEAF_PAGE_SIZE];
 };
 }  // namespace bustub

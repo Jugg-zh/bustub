@@ -185,4 +185,5 @@ setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE
                                                                 "${PROJECT_SOURCE_DIR}/third_party/*"
                                                                 "${PROJECT_SOURCE_DIR}/build/*"
                                                                 "${PROJECT_SOURCE_DIR}/src/include/type/*"
-                                                                "${PROJECT_SOURCE_DIR}/src/type/*")      
+                                                                "${PROJECT_SOURCE_DIR}/src/type/*"
+                                                                "${PROJECT_SOURCE_DIR}/src/include/common/*")      
