@@ -187,4 +187,5 @@ setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE
                                                                 "${PROJECT_SOURCE_DIR}/src/include/storage/page/table_page.h"
                                                                 "${PROJECT_SOURCE_DIR}/src/storage/page/table_page.cpp"
                                                                 "${PROJECT_SOURCE_DIR}/src/include/storage/table/*"
-                                                                "${PROJECT_SOURCE_DIR}/src/storage/table/*")      
+                                                                "${PROJECT_SOURCE_DIR}/src/storage/table/*"
+                                                                "${PROJECT_SOURCE_DIR}/src/vcpkg/*")      
