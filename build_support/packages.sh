@@ -94,7 +94,12 @@ install_linux() {
       g++-7 \
       pkg-config \
       valgrind \
-      zlib1g-dev
+      zlib1g-dev \
+      gcovr \
+      ninja-build
+  git clone https://github.com/microsoft/vcpkg
+  ./vcpkg/bootstrap-vcpkg.sh
+  ./vcpkg/vcpkg install GTest
 }
 
 main "$@"
