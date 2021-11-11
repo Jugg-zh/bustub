@@ -98,6 +98,7 @@ install_linux() {
       gcovr \
       ninja-build
   git clone https://github.com/microsoft/vcpkg
+  chmod 777 vcpkg
   ./vcpkg/bootstrap-vcpkg.sh
   ./vcpkg/vcpkg install GTest
 }
