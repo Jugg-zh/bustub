@@ -87,7 +87,7 @@ using ComparatorType = GenericComparator<8>;
 using HashFunctionType = HashFunction<KeyType>;
 
 // SELECT col_a, col_b FROM test_1 WHERE col_a < 500
-TEST_F(ExecutorTest, DISABLED_SimpleSeqScanTest) {
+TEST_F(ExecutorTest, SimpleSeqScanTest) {
   // Construct query plan
   TableInfo *table_info = GetExecutorContext()->GetCatalog()->GetTable("test_1");
   const Schema &schema = table_info->schema_;
@@ -107,6 +107,47 @@ TEST_F(ExecutorTest, DISABLED_SimpleSeqScanTest) {
   for (const auto &tuple : result_set) {
     ASSERT_TRUE(tuple.GetValue(out_schema, out_schema->GetColIdx("colA")).GetAs<int32_t>() < 500);
     ASSERT_TRUE(tuple.GetValue(out_schema, out_schema->GetColIdx("colB")).GetAs<int32_t>() < 10);
+  }
+}
+
+TEST_F(ExecutorTest, SeqScanTestOne) {
+  // Construct query plan
+  TableInfo *table_info = GetExecutorContext()->GetCatalog()->GetTable("test_4");
+  const Schema &schema = table_info->schema_;
+  auto *col_c = MakeColumnValueExpression(schema, 0, "colC");
+  auto *const10 = MakeConstantValueExpression(ValueFactory::GetIntegerValue(10));
+  auto *predicate = MakeComparisonExpression(col_c, const10, ComparisonType::GreaterThan);
+  auto *out_schema = MakeOutputSchema({{"colC", col_c}});
+  SeqScanPlanNode plan(out_schema, predicate, table_info->oid_);
+
+  // Execute
+  std::vector<Tuple> result_set{};
+  GetExecutionEngine()->Execute(&plan, &result_set, GetTxn(), GetExecutorContext());
+
+  // Verify
+  ASSERT_EQ(result_set.size(), 0);
+}
+
+TEST_F(ExecutorTest, SeqScanTestTwo) {
+  // Construct query plan
+  TableInfo *table_info = GetExecutorContext()->GetCatalog()->GetTable("test_2");
+  const Schema &schema = table_info->schema_;
+  auto *col_1 = MakeColumnValueExpression(schema, 0, "col1");
+  auto *col_3 = MakeColumnValueExpression(schema, 0, "col3");
+  auto *const50 = MakeConstantValueExpression(ValueFactory::GetSmallIntValue(50));
+  auto *predicate = MakeComparisonExpression(col_1, const50, ComparisonType::GreaterThanOrEqual);
+  auto *out_schema = MakeOutputSchema({{"col1", col_1}, {"col3", col_3}});
+  SeqScanPlanNode plan(out_schema, predicate, table_info->oid_);
+
+  // Execute
+  std::vector<Tuple> result_set{};
+  GetExecutionEngine()->Execute(&plan, &result_set, GetTxn(), GetExecutorContext());
+
+  // Verify
+  ASSERT_EQ(result_set.size(), 50);
+  for (const auto &tuple : result_set) {
+    ASSERT_TRUE(tuple.GetValue(out_schema, out_schema->GetColIdx("col1")).GetAs<int16_t>() >= 50);
+    ASSERT_TRUE(tuple.GetValue(out_schema, out_schema->GetColIdx("col3")).GetAs<int64_t>() > 0);
   }
 }
 

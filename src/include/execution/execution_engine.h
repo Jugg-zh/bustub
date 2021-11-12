@@ -65,7 +65,8 @@ class ExecutionEngine {
         }
       }
     } catch (Exception &e) {
-      // TODO(student): handle exceptions
+      // TODO(dashuai): handle exceptions
+      return false;
     }
 
     return true;
