@@ -11,16 +11,72 @@
 //===----------------------------------------------------------------------===//
 
 #include "execution/executors/hash_join_executor.h"
+#include "execution/expressions/abstract_expression.h"
 
 namespace bustub {
 
 HashJoinExecutor::HashJoinExecutor(ExecutorContext *exec_ctx, const HashJoinPlanNode *plan,
                                    std::unique_ptr<AbstractExecutor> &&left_child,
                                    std::unique_ptr<AbstractExecutor> &&right_child)
-    : AbstractExecutor(exec_ctx) {}
+    : AbstractExecutor(exec_ctx),
+      plan_(plan),
+      left_child_executor_(std::move(left_child)),
+      right_child_executor_(std::move(right_child)) {
+  Tuple left_tuple;
+  RID left_rid;
+  while (left_child_executor_->Next(&left_tuple, &left_rid)) {
+    Value value = plan_->LeftJoinKeyExpression()->Evaluate(&left_tuple, plan_->GetLeftPlan()->OutputSchema());
+    auto left_col_count = plan_->GetLeftPlan()->OutputSchema()->GetColumnCount();
+    std::vector<Value> values;
+    values.reserve(left_col_count);
+    for (uint32_t i = 0; i < left_col_count; i++) {
+      values.push_back(left_tuple.GetValue(plan_->GetLeftPlan()->OutputSchema(), i));
+    }
+    HashJoinKey key{value};
+    if (hash_table_.count(key) > 0) {
+      hash_table_[key].push_back(std::move(values));
+    } else {
+      hash_table_.insert({key, {values}});
+    }
+  }
+}
 
-void HashJoinExecutor::Init() {}
+void HashJoinExecutor::Init() {
+  left_child_executor_->Init();
+  right_child_executor_->Init();
+  next_pos_ = 0;
+  outer_table_buffer_.clear();
+}
 
-bool HashJoinExecutor::Next(Tuple *tuple, RID *rid) { return false; }
+bool HashJoinExecutor::Next(Tuple *tuple, RID *rid) {
+  bool is_find = false;
+  if (next_pos_ >= outer_table_buffer_.size()) {
+    while (right_child_executor_->Next(tuple, rid)) {
+      Value value = plan_->RightJoinKeyExpression()->Evaluate(tuple, plan_->GetRightPlan()->OutputSchema());
+      auto iter = hash_table_.find(HashJoinKey{value});
+      if (iter != hash_table_.end()) {
+        outer_table_buffer_ = iter->second;
+        next_pos_ = 0;
+        is_find = true;
+        break;
+      }
+    }
+    if (!is_find) {
+      return false;
+    }
+  }
+  auto right_col_count = plan_->GetRightPlan()->OutputSchema()->GetColumnCount();
+  std::vector<Value> values;
+  values.reserve(outer_table_buffer_.size() + right_col_count);
+  for (const auto &value : outer_table_buffer_[next_pos_]) {
+    values.push_back(value);
+  }
+  for (uint32_t i = 0; i < right_col_count; i++) {
+    values.push_back(tuple->GetValue(plan_->GetRightPlan()->OutputSchema(), i));
+  }
+  *tuple = Tuple(values, plan_->OutputSchema());
+  next_pos_++;
+  return true;
+}
 
 }  // namespace bustub

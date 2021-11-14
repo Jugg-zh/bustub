@@ -20,20 +20,11 @@
 namespace bustub {
 
 SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan)
-    : AbstractExecutor(exec_ctx), plan_(plan) {
+    : AbstractExecutor(exec_ctx), plan_(plan), cur_(nullptr, RID{}, nullptr), end_(nullptr, RID{}, nullptr) {
   table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->GetTableOid());
-  cur_ = std::make_unique<TableIterator>(table_info_->table_->Begin(exec_ctx_->GetTransaction()));
-  end_ = std::make_unique<TableIterator>(table_info_->table_->End());
-}
+  cur_ = table_info_->table_->Begin(exec_ctx_->GetTransaction());
+  end_ = table_info_->table_->End();
 
-SeqScanExecutor::~SeqScanExecutor() {
-  if (is_alloc_) {
-    delete predicate_;
-  }
-  predicate_ = nullptr;
-}
-
-void SeqScanExecutor::Init() {
   out_schema_idx_.reserve(plan_->OutputSchema()->GetColumnCount());
   for (uint32_t i = 0; i < plan_->OutputSchema()->GetColumnCount(); i++) {
     auto col_name = plan_->OutputSchema()->GetColumn(i).GetName();
@@ -48,9 +39,18 @@ void SeqScanExecutor::Init() {
   }
 }
 
+SeqScanExecutor::~SeqScanExecutor() {
+  if (is_alloc_) {
+    delete predicate_;
+  }
+  predicate_ = nullptr;
+}
+
+void SeqScanExecutor::Init() { cur_ = table_info_->table_->Begin(exec_ctx_->GetTransaction()); }
+
 bool SeqScanExecutor::Next(Tuple *tuple, RID *rid) {
-  while (*cur_ != *end_) {
-    auto temp = (*cur_)++;
+  while (cur_ != end_) {
+    auto temp = cur_++;
     auto value = predicate_->Evaluate(&(*temp), &table_info_->schema_);
     if (value.GetAs<bool>()) {
       // Only keep the columns of the out schema

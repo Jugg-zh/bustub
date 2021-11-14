@@ -51,9 +51,16 @@ class SeqScanExecutor : public AbstractExecutor {
   /** @return The output schema for the sequential scan */
   const Schema *GetOutputSchema() override { return plan_->OutputSchema(); }
 
+  /** @return 'true' if there are no more tuples */
+  bool Empty() override { return cur_ == end_; }
+
  private:
   /** The sequential scan plan node to be executed */
   const SeqScanPlanNode *plan_;
+  /** Point to the position of the tuple currently being scanned */
+  TableIterator cur_;
+  /** Point to the next position of the last tuple */
+  TableIterator end_;
   /** Metadata identifying the table that should be seqscan */
   TableInfo *table_info_{Catalog::NULL_TABLE_INFO};
   /** Determine whether to return the tuples */
@@ -62,9 +69,5 @@ class SeqScanExecutor : public AbstractExecutor {
   bool is_alloc_{false};
   /** The idx of each column of the out schema in the origin schema */
   std::vector<uint32_t> out_schema_idx_;
-  /** Point to the position of the tuple currently being scanned */
-  std::unique_ptr<TableIterator> cur_;
-  /** Point to the next position of the last tuple */
-  std::unique_ptr<TableIterator> end_;
 };
 }  // namespace bustub
