@@ -12,6 +12,7 @@
 
 #include "execution/executors/hash_join_executor.h"
 #include "execution/expressions/abstract_expression.h"
+#include "execution/expressions/column_value_expression.h"
 
 namespace bustub {
 
@@ -65,14 +66,15 @@ bool HashJoinExecutor::Next(Tuple *tuple, RID *rid) {
       return false;
     }
   }
-  auto right_col_count = plan_->GetRightPlan()->OutputSchema()->GetColumnCount();
   std::vector<Value> values;
-  values.reserve(outer_table_buffer_.size() + right_col_count);
-  for (const auto &value : outer_table_buffer_[next_pos_]) {
-    values.push_back(value);
-  }
-  for (uint32_t i = 0; i < right_col_count; i++) {
-    values.push_back(tuple->GetValue(plan_->GetRightPlan()->OutputSchema(), i));
+  values.reserve(plan_->OutputSchema()->GetColumnCount());
+  for (const auto &column : plan_->OutputSchema()->GetColumns()) {
+    auto column_expr = reinterpret_cast<const ColumnValueExpression *>(column.GetExpr());
+    if (column_expr->GetTupleIdx() == 0) {
+      values.push_back(outer_table_buffer_[next_pos_][column_expr->GetColIdx()]);
+    } else {
+      values.push_back(tuple->GetValue(plan_->GetRightPlan()->OutputSchema(), column_expr->GetColIdx()));
+    }
   }
   *tuple = Tuple(values, plan_->OutputSchema());
   next_pos_++;

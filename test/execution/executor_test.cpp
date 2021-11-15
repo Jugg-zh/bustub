@@ -1177,6 +1177,54 @@ TEST_F(ExecutorTest, NestedLoopJoinTestOne) {
   ASSERT_EQ(result_set.size(), 100);
 }
 
+// SELECT test_1.colB, test_2.col4 FROM test_1 JOIN test_2 ON test_1.colA = test_2.col2
+TEST_F(ExecutorTest, NestedLoopJoinTestTwo) {
+  const Schema *out_schema1;
+  std::unique_ptr<AbstractPlanNode> scan_plan1;
+  {
+    auto table_info = GetExecutorContext()->GetCatalog()->GetTable("test_1");
+    auto &schema = table_info->schema_;
+    auto col_a = MakeColumnValueExpression(schema, 0, "colA");
+    auto col_b = MakeColumnValueExpression(schema, 0, "colB");
+    out_schema1 = MakeOutputSchema({{"colA", col_a}, {"colB", col_b}});
+    scan_plan1 = std::make_unique<SeqScanPlanNode>(out_schema1, nullptr, table_info->oid_);
+  }
+
+  const Schema *out_schema2;
+  std::unique_ptr<AbstractPlanNode> scan_plan2;
+  {
+    auto table_info = GetExecutorContext()->GetCatalog()->GetTable("test_2");
+    auto &schema = table_info->schema_;
+    auto col_2 = MakeColumnValueExpression(schema, 0, "col2");
+    auto col_4 = MakeColumnValueExpression(schema, 0, "col4");
+    out_schema2 = MakeOutputSchema({{"col2", col_2}, {"col4", col_4}});
+    scan_plan2 = std::make_unique<SeqScanPlanNode>(out_schema2, nullptr, table_info->oid_);
+  }
+
+  const Schema *out_final;
+  std::unique_ptr<NestedLoopJoinPlanNode> join_plan;
+  {
+    auto col_a = MakeColumnValueExpression(*out_schema1, 0, "colA");
+    auto col_b = MakeColumnValueExpression(*out_schema1, 0, "colB");
+
+    auto col_2 = MakeColumnValueExpression(*out_schema2, 1, "col2");
+    auto col_4 = MakeColumnValueExpression(*out_schema2, 1, "col4");
+    auto predicate = MakeComparisonExpression(col_a, col_2, ComparisonType::Equal);
+    out_final = MakeOutputSchema({{"colB", col_b}, {"col2", col_4}});
+    join_plan = std::make_unique<NestedLoopJoinPlanNode>(
+        out_final, std::vector<const AbstractPlanNode *>{scan_plan1.get(), scan_plan2.get()}, predicate);
+  }
+
+  std::vector<Tuple> result_set;
+  result_set.clear();
+  GetExecutionEngine()->Execute(join_plan.get(), &result_set, GetTxn(), GetExecutorContext());
+  ASSERT_EQ(100, result_set.size());
+  for (const auto &tuple : result_set) {
+    ASSERT_TRUE(tuple.GetValue(out_final, 0).GetAs<int32_t>() < 10);
+    ASSERT_TRUE(tuple.GetValue(out_final, 1).GetAs<int32_t>() < 2049);
+  }
+}
+
 // SELECT test_4.colA, test_4.colB, test_6.colA, test_6.colB FROM test_4 JOIN test_6 ON test_4.colA = test_6.colA;
 TEST_F(ExecutorTest, SimpleHashJoinTest) {
   // Construct sequential scan of table test_4
@@ -1313,8 +1361,55 @@ TEST_F(ExecutorTest, HashJoinTestOne) {
   }
 }
 
-// SELECT COUNT(col_a), SUM(col_a), min(col_a), max(col_a) from test_1;
-TEST_F(ExecutorTest, DISABLED_SimpleAggregationTest) {
+// SELECT test_1.colB, test_2.col4 FROM test_1 JOIN test_2 ON test_1.colA = test_2.col2
+TEST_F(ExecutorTest, HashJoinTestTwo) {
+  const Schema *out_schema1;
+  std::unique_ptr<AbstractPlanNode> scan_plan1;
+  {
+    auto table_info = GetExecutorContext()->GetCatalog()->GetTable("test_1");
+    auto &schema = table_info->schema_;
+    auto col_a = MakeColumnValueExpression(schema, 0, "colA");
+    auto col_b = MakeColumnValueExpression(schema, 0, "colB");
+    out_schema1 = MakeOutputSchema({{"colA", col_a}, {"colB", col_b}});
+    scan_plan1 = std::make_unique<SeqScanPlanNode>(out_schema1, nullptr, table_info->oid_);
+  }
+
+  const Schema *out_schema2;
+  std::unique_ptr<AbstractPlanNode> scan_plan2;
+  {
+    auto table_info = GetExecutorContext()->GetCatalog()->GetTable("test_2");
+    auto &schema = table_info->schema_;
+    auto col_2 = MakeColumnValueExpression(schema, 0, "col2");
+    auto col_4 = MakeColumnValueExpression(schema, 0, "col4");
+    out_schema2 = MakeOutputSchema({{"col2", col_2}, {"col4", col_4}});
+    scan_plan2 = std::make_unique<SeqScanPlanNode>(out_schema2, nullptr, table_info->oid_);
+  }
+
+  const Schema *out_final;
+  std::unique_ptr<HashJoinPlanNode> join_plan;
+  {
+    auto col_a = MakeColumnValueExpression(*out_schema1, 0, "colA");
+    auto col_b = MakeColumnValueExpression(*out_schema1, 0, "colB");
+
+    auto col_2 = MakeColumnValueExpression(*out_schema2, 1, "col2");
+    auto col_4 = MakeColumnValueExpression(*out_schema2, 1, "col4");
+    out_final = MakeOutputSchema({{"colB", col_b}, {"col2", col_4}});
+    join_plan = std::make_unique<HashJoinPlanNode>(
+        out_final, std::vector<const AbstractPlanNode *>{scan_plan1.get(), scan_plan2.get()}, col_a, col_2);
+  }
+
+  std::vector<Tuple> result_set;
+  result_set.clear();
+  GetExecutionEngine()->Execute(join_plan.get(), &result_set, GetTxn(), GetExecutorContext());
+  ASSERT_EQ(100, result_set.size());
+  for (const auto &tuple : result_set) {
+    ASSERT_TRUE(tuple.GetValue(out_final, 0).GetAs<int32_t>() < 10);
+    ASSERT_TRUE(tuple.GetValue(out_final, 1).GetAs<int32_t>() < 2049);
+  }
+}
+
+// SELECT COUNT(colA), SUM(colA), min(colA), max(colA) from test_1;
+TEST_F(ExecutorTest, SimpleAggregationTest) {
   const Schema *scan_schema;
   std::unique_ptr<AbstractPlanNode> scan_plan;
   {
@@ -1364,7 +1459,7 @@ TEST_F(ExecutorTest, DISABLED_SimpleAggregationTest) {
 }
 
 // SELECT count(col_a), col_b, sum(col_c) FROM test_1 Group By col_b HAVING count(col_a) > 100
-TEST_F(ExecutorTest, DISABLED_SimpleGroupByAggregation) {
+TEST_F(ExecutorTest, SimpleGroupByAggregation) {
   const Schema *scan_schema;
   std::unique_ptr<AbstractPlanNode> scan_plan;
   {
@@ -1417,7 +1512,7 @@ TEST_F(ExecutorTest, DISABLED_SimpleGroupByAggregation) {
 }
 
 // SELECT colA, colB FROM test_3 LIMIT 10
-TEST_F(ExecutorTest, DISABLED_SimpleLimitTest) {
+TEST_F(ExecutorTest, SimpleLimitTest) {
   auto *table_info = GetExecutorContext()->GetCatalog()->GetTable("test_3");
   auto &schema = table_info->schema_;
 
@@ -1445,7 +1540,7 @@ TEST_F(ExecutorTest, DISABLED_SimpleLimitTest) {
 }
 
 // SELECT DISTINCT colC FROM test_7
-TEST_F(ExecutorTest, DISABLED_SimpleDistinctTest) {
+TEST_F(ExecutorTest, SimpleDistinctTest) {
   auto *table_info = GetExecutorContext()->GetCatalog()->GetTable("test_7");
   auto &schema = table_info->schema_;
 

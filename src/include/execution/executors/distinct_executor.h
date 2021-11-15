@@ -13,7 +13,9 @@
 #pragma once
 
 #include <memory>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "execution/executors/abstract_executor.h"
 #include "execution/plans/distinct_plan.h"
@@ -46,12 +48,17 @@ class DistinctExecutor : public AbstractExecutor {
   bool Next(Tuple *tuple, RID *rid) override;
 
   /** @return The output schema for the distinct */
-  const Schema *GetOutputSchema() override { return plan_->OutputSchema(); };
+  const Schema *GetOutputSchema() override { return plan_->OutputSchema(); }
+
+  /** @return 'true' if there are no more tuples */
+  bool Empty() override { return child_executor_->Empty(); }
 
  private:
   /** The distinct plan node to be executed */
   const DistinctPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
+  /** Hash table for each column in the out schema */
+  std::vector<std::unordered_set<DistinctKey>> hash_table_;
 };
 }  // namespace bustub

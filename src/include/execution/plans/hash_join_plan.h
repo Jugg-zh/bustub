@@ -79,4 +79,5 @@ template <>
 struct hash<bustub::HashJoinKey> {
   std::size_t operator()(const bustub::HashJoinKey &key) const { return bustub::HashUtil::HashValue(&key.key_); }
 };
+
 }  // namespace std

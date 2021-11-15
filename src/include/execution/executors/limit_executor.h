@@ -46,12 +46,17 @@ class LimitExecutor : public AbstractExecutor {
   bool Next(Tuple *tuple, RID *rid) override;
 
   /** @return The output schema for the limit */
-  const Schema *GetOutputSchema() override { return plan_->OutputSchema(); };
+  const Schema *GetOutputSchema() override { return plan_->OutputSchema(); }
+
+  /** @return 'true' if there are no more tuples */
+  bool Empty() override { return child_executor_->Empty(); }
 
  private:
   /** The limit plan node to be executed */
   const LimitPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
+  /** How many tuples have been returned so far */
+  size_t num_tuples_{0};
 };
 }  // namespace bustub

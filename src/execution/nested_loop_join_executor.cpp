@@ -13,6 +13,7 @@
 #include <iostream>
 
 #include "execution/executors/nested_loop_join_executor.h"
+#include "execution/expressions/column_value_expression.h"
 #include "execution/expressions/comparison_expression.h"
 #include "execution/expressions/constant_value_expression.h"
 #include "type/value_factory.h"
@@ -65,14 +66,14 @@ bool NestedLoopJoinExecutor::Next(Tuple *tuple, RID *rid) {
                                           plan_->GetRightPlan()->OutputSchema());
     if (value.GetAs<bool>()) {
       std::vector<Value> values;
-      auto left_col_count = plan_->GetLeftPlan()->OutputSchema()->GetColumnCount();
-      auto right_col_count = plan_->GetRightPlan()->OutputSchema()->GetColumnCount();
-      values.reserve(left_col_count + right_col_count);
-      for (uint32_t i = 0; i < left_col_count; i++) {
-        values.push_back(left_tuple_.GetValue(plan_->GetLeftPlan()->OutputSchema(), i));
-      }
-      for (uint32_t i = 0; i < right_col_count; i++) {
-        values.push_back(right_tuple.GetValue(plan_->GetRightPlan()->OutputSchema(), i));
+      values.reserve(plan_->OutputSchema()->GetColumnCount());
+      for (const auto &column : plan_->OutputSchema()->GetColumns()) {
+        auto column_expr = reinterpret_cast<const ColumnValueExpression *>(column.GetExpr());
+        if (column_expr->GetTupleIdx() == 0) {
+          values.push_back(left_tuple_.GetValue(plan_->GetLeftPlan()->OutputSchema(), column_expr->GetColIdx()));
+        } else {
+          values.push_back(right_tuple.GetValue(plan_->GetRightPlan()->OutputSchema(), column_expr->GetColIdx()));
+        }
       }
       *tuple = Tuple(values, plan_->OutputSchema());
       *rid = left_tuple_.GetRid();
