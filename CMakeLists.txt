@@ -176,7 +176,7 @@ add_custom_target(check-clang-tidy
 ###########################################################
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 include(CodeCoverage)
-setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE_DIR}/test/*"
+setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE  "${PROJECT_SOURCE_DIR}/test/*"
                                                                 "${PROJECT_SOURCE_DIR}/third_party/*"
                                                                 "${PROJECT_SOURCE_DIR}/build/*"
                                                                 "${PROJECT_SOURCE_DIR}/src/include/type/*"
@@ -188,4 +188,6 @@ setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE "${PROJECT_SOURCE
                                                                 "${PROJECT_SOURCE_DIR}/src/storage/page/table_page.cpp"
                                                                 "${PROJECT_SOURCE_DIR}/src/include/storage/table/*"
                                                                 "${PROJECT_SOURCE_DIR}/src/storage/table/*"
-                                                                "${PROJECT_SOURCE_DIR}/src/vcpkg/*")      
+                                                                "${PROJECT_SOURCE_DIR}/src/vcpkg/*"
+                                                                "${PROJECT_SOURCE_DIR}/src/recovery/*"
+                                                                "${PROJECT_SOURCE_DIR}/src/include/recovery/*")      
