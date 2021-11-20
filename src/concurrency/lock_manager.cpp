@@ -20,6 +20,8 @@ namespace bustub {
 bool LockManager::LockShared(Transaction *txn, const RID &rid) {
   std::unique_lock<std::mutex> lock(latch_);
 
+  id_2_txn_.emplace(txn->GetTransactionId(), txn);
+
   if (txn->GetIsolationLevel() == IsolationLevel::READ_UNCOMMITTED) {
     txn->SetState(TransactionState::ABORTED);
     throw TransactionAbortException(txn->GetTransactionId(), AbortReason::LOCKSHARED_ON_READ_UNCOMMITTED);
@@ -33,6 +35,7 @@ bool LockManager::LockShared(Transaction *txn, const RID &rid) {
   request_queue->request_queue_.emplace_back(txn->GetTransactionId(), LockMode::SHARED);
 
   if (request_queue->is_writing_) {
+    DeadlockPrevent(txn, request_queue);
     request_queue->cv_.wait(lock, [request_queue, txn]() -> bool {
       return txn->GetState() == TransactionState::ABORTED || !request_queue->is_writing_;
     });
@@ -51,6 +54,8 @@ bool LockManager::LockShared(Transaction *txn, const RID &rid) {
 bool LockManager::LockExclusive(Transaction *txn, const RID &rid) {
   std::unique_lock<std::mutex> lock(latch_);
 
+  id_2_txn_.emplace(txn->GetTransactionId(), txn);
+
   if (!LockPrepare(txn, rid)) {
     return false;
   }
@@ -59,6 +64,7 @@ bool LockManager::LockExclusive(Transaction *txn, const RID &rid) {
   request_queue->request_queue_.emplace_back(txn->GetTransactionId(), LockMode::EXCLUSIVE);
 
   if (request_queue->is_writing_ || request_queue->sharing_count_ > 0) {
+    DeadlockPrevent(txn, request_queue);
     request_queue->cv_.wait(lock, [request_queue, txn]() -> bool {
       return txn->GetState() == TransactionState::ABORTED ||
              (!request_queue->is_writing_ && request_queue->sharing_count_ == 0);
@@ -99,6 +105,7 @@ bool LockManager::LockUpgrade(Transaction *txn, const RID &rid) {
   iter->granted_ = false;
 
   if (request_queue->is_writing_ || request_queue->sharing_count_ > 0) {
+    DeadlockPrevent(txn, request_queue);
     request_queue->upgrading_ = true;
     request_queue->cv_.wait(lock, [request_queue, txn]() -> bool {
       return txn->GetState() == TransactionState::ABORTED ||
@@ -175,6 +182,19 @@ std::list<LockManager::LockRequest>::iterator LockManager::GetIterator(std::list
     }
   }
   return request_queue->end();
+}
+
+void LockManager::DeadlockPrevent(Transaction *txn, LockRequestQueue *request_queue) {
+  for (const auto &request : request_queue->request_queue_) {
+    if (request.granted_ && request.txn_id_ > txn->GetTransactionId()) {
+      id_2_txn_[request.txn_id_]->SetState(TransactionState::ABORTED);
+      if (request.lock_mode_ == LockMode::SHARED) {
+        request_queue->sharing_count_--;
+      } else {
+        request_queue->is_writing_ = false;
+      }
+    }
+  }
 }
 
 }  // namespace bustub

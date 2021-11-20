@@ -115,10 +115,14 @@ class LockManager {
 
   std::list<LockRequest>::iterator GetIterator(std::list<LockRequest> *request_queue, txn_id_t txn_id);
 
+  void DeadlockPrevent(Transaction *txn, LockRequestQueue *request_queue);
+
   std::mutex latch_;
 
   /** Lock table for lock requests. */
   std::unordered_map<RID, LockRequestQueue> lock_table_;
+
+  std::unordered_map<txn_id_t, Transaction *> id_2_txn_;
 };
 
 }  // namespace bustub
