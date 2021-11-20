@@ -49,8 +49,9 @@ class LockManager {
     std::list<LockRequest> request_queue_;
     // for notifying blocked transactions on this rid
     std::condition_variable cv_;
-    // txn_id of an upgrading transaction (if any)
-    txn_id_t upgrading_ = INVALID_TXN_ID;
+    bool upgrading_ = false;
+    int sharing_count_ = 0;
+    bool is_writing_ = false;
   };
 
  public:
@@ -96,6 +97,11 @@ class LockManager {
   bool LockUpgrade(Transaction *txn, const RID &rid);
 
   /**
+   * Check if the status of the transaction is set to Aborted, and throw an exception if it is.
+   */
+  void CheckAborted(Transaction *txn, LockRequestQueue *request_queue);
+
+  /**
    * Release the lock held by the transaction.
    * @param txn the transaction releasing the lock, it should actually hold the
    * lock
@@ -105,6 +111,10 @@ class LockManager {
   bool Unlock(Transaction *txn, const RID &rid);
 
  private:
+  bool LockPrepare(Transaction *txn, const RID &rid);
+
+  std::list<LockRequest>::iterator GetIterator(std::list<LockRequest> *request_queue, txn_id_t txn_id);
+
   std::mutex latch_;
 
   /** Lock table for lock requests. */
