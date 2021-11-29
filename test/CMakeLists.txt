@@ -7,7 +7,6 @@ file(GLOB BUSTUB_TEST_SOURCES "${PROJECT_SOURCE_DIR}/test/*/*test.cpp")
 ##########################################
 # "make check-tests"
 ##########################################
-add_custom_target(build-tests COMMAND ${CMAKE_CTEST_COMMAND} --show-only)
 add_custom_target(check-tests COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
 
 ##########################################
@@ -20,7 +19,6 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
 
     # Add the test target separately and as part of "make check-tests".
     add_executable(${bustub_test_name} EXCLUDE_FROM_ALL ${bustub_test_source})
-    add_dependencies(build-tests ${bustub_test_name})
     add_dependencies(check-tests ${bustub_test_name})
 
     target_link_libraries(${bustub_test_name} bustub_shared GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
@@ -33,6 +31,5 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     )
 
     # Add the test under CTest.
-    add_test(${bustub_test_name} ${CMAKE_BINARY_DIR}/test/${bustub_test_name} --gtest_color=yes
-            --gtest_output=xml:${CMAKE_BINARY_DIR}/test/${bustub_test_name}.xml)
+    add_test(${bustub_test_name} ${CMAKE_BINARY_DIR}/test/${bustub_test_name} --gtest_color=yes)
 endforeach(bustub_test_source ${BUSTUB_TEST_SOURCES})
