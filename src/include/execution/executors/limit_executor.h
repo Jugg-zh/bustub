@@ -48,9 +48,6 @@ class LimitExecutor : public AbstractExecutor {
   /** @return The output schema for the limit */
   const Schema *GetOutputSchema() override { return plan_->OutputSchema(); }
 
-  /** @return 'true' if there are no more tuples */
-  bool Empty() override { return child_executor_->Empty(); }
-
  private:
   /** The limit plan node to be executed */
   const LimitPlanNode *plan_;

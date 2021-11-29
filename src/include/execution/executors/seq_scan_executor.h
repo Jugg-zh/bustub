@@ -51,9 +51,6 @@ class SeqScanExecutor : public AbstractExecutor {
   /** @return The output schema for the sequential scan */
   const Schema *GetOutputSchema() override { return plan_->OutputSchema(); }
 
-  /** @return 'true' if there are no more tuples */
-  bool Empty() override { return cur_ == end_; }
-
  private:
   /** The sequential scan plan node to be executed */
   const SeqScanPlanNode *plan_;

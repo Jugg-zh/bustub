@@ -53,9 +53,6 @@ class HashJoinExecutor : public AbstractExecutor {
   /** @return The output schema for the join */
   const Schema *GetOutputSchema() override { return plan_->OutputSchema(); }
 
-  /** @return 'true' if there are no more tuples */
-  bool Empty() override { return left_child_executor_->Empty() && right_child_executor_->Empty(); }
-
  private:
   /** The NestedLoopJoin plan node to be executed. */
   const HashJoinPlanNode *plan_;

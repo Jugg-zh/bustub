@@ -184,9 +184,6 @@ class AggregationExecutor : public AbstractExecutor {
   /** Do not use or remove this function, otherwise you will get zero points. */
   const AbstractExecutor *GetChildExecutor() const;
 
-  /** @return 'true' if there are no more tuples */
-  bool Empty() override { return child_->Empty(); }
-
  private:
   /** @return The tuple as an AggregateKey */
   AggregateKey MakeAggregateKey(const Tuple *tuple) {
