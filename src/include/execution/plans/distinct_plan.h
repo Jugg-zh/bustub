@@ -12,16 +12,9 @@
 
 #pragma once
 
-#include "common/util/hash_util.h"
 #include "execution/plans/abstract_plan.h"
 
 namespace bustub {
-
-struct DistinctKey {
-  Value key_;
-
-  bool operator==(const DistinctKey &other) const { return key_.CompareEquals(other.key_) == CmpBool::CmpTrue; }
-};
 
 /**
  * Distinct removes duplicate rows from the output of a child node.
@@ -46,11 +39,3 @@ class DistinctPlanNode : public AbstractPlanNode {
 };
 
 }  // namespace bustub
-
-namespace std {
-template <>
-struct hash<bustub::DistinctKey> {
-  std::size_t operator()(const bustub::DistinctKey &key) const { return bustub::HashUtil::HashValue(&key.key_); }
-};
-
-}  // namespace std

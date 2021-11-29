@@ -15,16 +15,9 @@
 #include <utility>
 #include <vector>
 
-#include "common/util/hash_util.h"
 #include "execution/plans/abstract_plan.h"
 
 namespace bustub {
-
-struct HashJoinKey {
-  Value key_;
-
-  bool operator==(const HashJoinKey &other) const { return key_.CompareEquals(other.key_) == CmpBool::CmpTrue; }
-};
 
 /**
  * Hash join performs a JOIN operation with a hash table.
@@ -73,11 +66,3 @@ class HashJoinPlanNode : public AbstractPlanNode {
 };
 
 }  // namespace bustub
-
-namespace std {
-template <>
-struct hash<bustub::HashJoinKey> {
-  std::size_t operator()(const bustub::HashJoinKey &key) const { return bustub::HashUtil::HashValue(&key.key_); }
-};
-
-}  // namespace std

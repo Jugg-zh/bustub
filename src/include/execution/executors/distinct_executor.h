@@ -17,8 +17,26 @@
 #include <utility>
 #include <vector>
 
+#include "common/util/hash_util.h"
 #include "execution/executors/abstract_executor.h"
 #include "execution/plans/distinct_plan.h"
+
+namespace bustub {
+
+struct DistinctKey {
+  Value key_;
+
+  bool operator==(const DistinctKey &other) const { return key_.CompareEquals(other.key_) == CmpBool::CmpTrue; }
+};
+}  // namespace bustub
+
+namespace std {
+
+template <>
+struct hash<bustub::DistinctKey> {
+  std::size_t operator()(const bustub::DistinctKey &key) const { return bustub::HashUtil::HashValue(&key.key_); }
+};
+}  // namespace std
 
 namespace bustub {
 
