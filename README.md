@@ -10,11 +10,11 @@ BusTub is a relational database management system built at [Carnegie Mellon Univ
 
 ## Gradescope
 
-**As for November 26, 2021.**
+**As for November 30, 2021.**
 
 - [x] Buffer Pool Manager ![](img/bpm.png)
 - [x] Hash Index ![](img/hi.png)
-- [x] Query Execution
+- [x] Query Execution ![](img/qe.png)
 - [x] Concurrency Control 
 
 ## Build
