@@ -24,9 +24,16 @@
 namespace bustub {
 
 struct DistinctKey {
-  Value key_;
+  std::vector<Value> group_bys_;
 
-  bool operator==(const DistinctKey &other) const { return key_.CompareEquals(other.key_) == CmpBool::CmpTrue; }
+  bool operator==(const DistinctKey &other) const {
+    for (uint32_t i = 0; i < other.group_bys_.size(); i++) {
+      if (group_bys_[i].CompareEquals(other.group_bys_[i]) != CmpBool::CmpTrue) {
+        return false;
+      }
+    }
+    return true;
+  }
 };
 }  // namespace bustub
 
@@ -34,7 +41,15 @@ namespace std {
 
 template <>
 struct hash<bustub::DistinctKey> {
-  std::size_t operator()(const bustub::DistinctKey &key) const { return bustub::HashUtil::HashValue(&key.key_); }
+  std::size_t operator()(const bustub::DistinctKey &agg_key) const {
+    size_t curr_hash = 0;
+    for (const auto &key : agg_key.group_bys_) {
+      if (!key.IsNull()) {
+        curr_hash = bustub::HashUtil::CombineHashes(curr_hash, bustub::HashUtil::HashValue(&key));
+      }
+    }
+    return curr_hash;
+  }
 };
 }  // namespace std
 
@@ -73,7 +88,7 @@ class DistinctExecutor : public AbstractExecutor {
   const DistinctPlanNode *plan_;
   /** The child executor from which tuples are obtained */
   std::unique_ptr<AbstractExecutor> child_executor_;
-  /** Hash table for each column in the out schema */
-  std::vector<std::unordered_set<DistinctKey>> hash_table_;
+  /** Hash table for all columns in the out schema */
+  std::unordered_set<DistinctKey> hash_table_;
 };
 }  // namespace bustub

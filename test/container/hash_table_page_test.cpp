@@ -333,11 +333,13 @@ TEST(HashTablePageTest, BucketPageGetValueTest) {
   for (int i = 0; i < static_cast<int>(values.size()); i++) {
     EXPECT_EQ(i, values[i]);
   }
+  values.clear();
   bucket_page->RemoveAt(1);
   bucket_page->Insert(0, 3, IntComparator());
   bucket_page->GetValue(0, IntComparator(), &values);
   ASSERT_EQ(3, values.size());
   EXPECT_EQ(3, values[1]);
+  values.clear();
   for (int i = 3; i < bucket_array_size - 1; i++) {
     bucket_page->Insert(i, i, IntComparator());
   }
@@ -348,6 +350,7 @@ TEST(HashTablePageTest, BucketPageGetValueTest) {
   EXPECT_TRUE(bucket_page->GetValue(0, IntComparator(), &values));
   ASSERT_EQ(4, values.size());
   EXPECT_EQ(4, values[3]);
+  values.clear();
 
   bpm->UnpinPage(bucket_page_id, true, nullptr);
   disk_manager->ShutDown();
@@ -380,15 +383,18 @@ TEST(HashTablePageTest, BucketPageInsertRemoveTest) {
   std::vector<int> values;
   EXPECT_FALSE(bucket_page->GetValue(0, IntComparator(), &values));
   EXPECT_FALSE(bucket_page->Insert(0, 1, IntComparator()));
+  values.clear();
   bucket_page->RemoveAt(0);
   EXPECT_TRUE(bucket_page->Insert(0, 1, IntComparator()));
   EXPECT_TRUE(bucket_page->GetValue(0, IntComparator(), &values));
   ASSERT_EQ(1, values.size());
   EXPECT_EQ(1, values[0]);
+  values.clear();
   bucket_page->RemoveAt(1);
   EXPECT_FALSE(bucket_page->Insert(0, 1, IntComparator()));
   EXPECT_FALSE(bucket_page->GetValue(6, IntComparator(), &values));
   EXPECT_TRUE(values.empty());
+  values.clear();
   EXPECT_TRUE(bucket_page->Insert(7, 8, IntComparator()));
   EXPECT_TRUE(bucket_page->GetValue(7, IntComparator(), &values));
   ASSERT_EQ(2, values.size());
@@ -398,6 +404,7 @@ TEST(HashTablePageTest, BucketPageInsertRemoveTest) {
     bucket_page->RemoveAt(i);
   }
   EXPECT_TRUE(bucket_page->IsEmpty());
+  values.clear();
 
   bpm->UnpinPage(bucket_page_id, true, nullptr);
   disk_manager->ShutDown();

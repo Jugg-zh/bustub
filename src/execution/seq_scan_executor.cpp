@@ -22,13 +22,17 @@ namespace bustub {
 SeqScanExecutor::SeqScanExecutor(ExecutorContext *exec_ctx, const SeqScanPlanNode *plan)
     : AbstractExecutor(exec_ctx), plan_(plan), cur_(nullptr, RID{}, nullptr), end_(nullptr, RID{}, nullptr) {
   table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->GetTableOid());
-  cur_ = table_info_->table_->Begin(exec_ctx_->GetTransaction());
-  end_ = table_info_->table_->End();
 
   out_schema_idx_.reserve(plan_->OutputSchema()->GetColumnCount());
-  for (uint32_t i = 0; i < plan_->OutputSchema()->GetColumnCount(); i++) {
-    auto col_name = plan_->OutputSchema()->GetColumn(i).GetName();
-    out_schema_idx_.push_back(table_info_->schema_.GetColIdx(col_name));
+  try {
+    for (uint32_t i = 0; i < plan_->OutputSchema()->GetColumnCount(); i++) {
+      auto col_name = plan_->OutputSchema()->GetColumn(i).GetName();
+      out_schema_idx_.push_back(table_info_->schema_.GetColIdx(col_name));
+    }
+  } catch (const std::logic_error &error) {
+    for (uint32_t i = 0; i < plan_->OutputSchema()->GetColumnCount(); i++) {
+      out_schema_idx_.push_back(i);
+    }
   }
 
   if (plan_->GetPredicate() != nullptr) {
@@ -46,7 +50,10 @@ SeqScanExecutor::~SeqScanExecutor() {
   predicate_ = nullptr;
 }
 
-void SeqScanExecutor::Init() { cur_ = table_info_->table_->Begin(exec_ctx_->GetTransaction()); }
+void SeqScanExecutor::Init() {
+  cur_ = table_info_->table_->Begin(exec_ctx_->GetTransaction());
+  end_ = table_info_->table_->End();
+}
 
 bool SeqScanExecutor::Next(Tuple *tuple, RID *rid) {
   while (cur_ != end_) {

@@ -55,12 +55,11 @@ bool NestedLoopJoinExecutor::Next(Tuple *tuple, RID *rid) {
   Tuple right_tuple;
   RID right_rid;
   while (true) {
-    if (!right_child_executor_->Next(&right_tuple, &right_rid)) {
+    while (!right_child_executor_->Next(&right_tuple, &right_rid)) {
       if (!left_child_executor_->Next(&left_tuple_, &left_rid_)) {
-        break;
+        return false;
       }
       right_child_executor_->Init();
-      right_child_executor_->Next(&right_tuple, &right_rid);
     }
     auto value = predicate_->EvaluateJoin(&left_tuple_, plan_->GetLeftPlan()->OutputSchema(), &right_tuple,
                                           plan_->GetRightPlan()->OutputSchema());

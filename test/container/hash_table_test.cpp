@@ -65,14 +65,17 @@ void ProcessHashTable(ExtendibleHashTable<int, int, IntComparator> *ht) {
   for (int i = 0; i < bucket_array_size; i++) {
     EXPECT_TRUE(ht->GetValue(nullptr, i * 2, &result));
     EXPECT_EQ(1, result.size());
+    result.clear();
   }
   for (int i = 0; i <= bucket_array_size; i++) {
     EXPECT_TRUE(ht->GetValue(nullptr, i * 2 + 1, &result));
     EXPECT_EQ(1, result.size());
+    result.clear();
   }
   for (int i = 0; i < bucket_array_size; i++) {
     EXPECT_TRUE(ht->GetValue(nullptr, 2 * (bucket_array_size + 1 + 2 * i), &result));
     EXPECT_EQ(1, result.size());
+    result.clear();
   }
 }
 
@@ -202,6 +205,7 @@ TEST(HashTableTest, SplitTestTwo) {
   for (int i = 0; i <= bucket_array_size; i++) {
     EXPECT_TRUE(ht.GetValue(nullptr, i * 4, &result));
     EXPECT_EQ(1, result.size());
+    result.clear();
   }
 
   disk_manager->ShutDown();

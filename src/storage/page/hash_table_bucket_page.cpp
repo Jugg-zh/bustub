@@ -25,9 +25,6 @@ namespace bustub {
 
 template <typename KeyType, typename ValueType, typename KeyComparator>
 bool HASH_TABLE_BUCKET_TYPE::GetValue(KeyType key, KeyComparator cmp, std::vector<ValueType> *result) {
-  result->clear();
-  result->resize(BUCKET_ARRAY_SIZE);
-  int hits = 0;
   for (uint32_t i = 0; i < BUCKET_ARRAY_SIZE; i++) {
     if (!IsReadable(i)) {
       if (!IsOccupied(i)) {
@@ -36,11 +33,9 @@ bool HASH_TABLE_BUCKET_TYPE::GetValue(KeyType key, KeyComparator cmp, std::vecto
       continue;
     }
     if (cmp(key, KeyAt(i)) == 0) {
-      (*result)[hits] = ValueAt(i);
-      hits++;
+      result->push_back(ValueAt(i));
     }
   }
-  result->resize(hits);
   return !result->empty();
 }
 

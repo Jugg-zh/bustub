@@ -20,10 +20,9 @@ UpdateExecutor::UpdateExecutor(ExecutorContext *exec_ctx, const UpdatePlanNode *
     : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {
   table_info_ = exec_ctx_->GetCatalog()->GetTable(plan_->TableOid());
   index_info_array_ = exec_ctx_->GetCatalog()->GetTableIndexes(table_info_->name_);
-  child_executor_->Init();
 }
 
-void UpdateExecutor::Init() {}
+void UpdateExecutor::Init() { child_executor_->Init(); }
 
 bool UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) {
   bool is_updated = false;
@@ -32,12 +31,15 @@ bool UpdateExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) {
     if (table_info_->table_->UpdateTuple(new_tuple, *rid, exec_ctx_->GetTransaction())) {
       is_updated = true;
     }
-  }
-  if (is_updated && !index_info_array_.empty()) {
-    for (auto index_info : index_info_array_) {
-      const auto index_key =
-          tuple->KeyFromTuple(table_info_->schema_, index_info->key_schema_, index_info->index_->GetKeyAttrs());
-      index_info->index_->InsertEntry(index_key, *rid, exec_ctx_->GetTransaction());
+    if (is_updated && !index_info_array_.empty()) {
+      for (auto index_info : index_info_array_) {
+        const auto index_key =
+            new_tuple.KeyFromTuple(table_info_->schema_, index_info->key_schema_, index_info->index_->GetKeyAttrs());
+        const auto old_index =
+            tuple->KeyFromTuple(table_info_->schema_, index_info->key_schema_, index_info->index_->GetKeyAttrs());
+        index_info->index_->DeleteEntry(old_index, *rid, exec_ctx_->GetTransaction());
+        index_info->index_->InsertEntry(index_key, *rid, exec_ctx_->GetTransaction());
+      }
     }
   }
   return is_updated;

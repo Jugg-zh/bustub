@@ -23,6 +23,8 @@ HashJoinExecutor::HashJoinExecutor(ExecutorContext *exec_ctx, const HashJoinPlan
       plan_(plan),
       left_child_executor_(std::move(left_child)),
       right_child_executor_(std::move(right_child)) {
+  left_child_executor_->Init();
+  right_child_executor_->Init();
   Tuple left_tuple;
   RID left_rid;
   while (left_child_executor_->Next(&left_tuple, &left_rid)) {

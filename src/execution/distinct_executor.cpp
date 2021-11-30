@@ -16,32 +16,22 @@ namespace bustub {
 
 DistinctExecutor::DistinctExecutor(ExecutorContext *exec_ctx, const DistinctPlanNode *plan,
                                    std::unique_ptr<AbstractExecutor> &&child_executor)
-    : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {
-  hash_table_.resize(plan_->OutputSchema()->GetColumnCount());
-}
+    : AbstractExecutor(exec_ctx), plan_(plan), child_executor_(std::move(child_executor)) {}
 
 void DistinctExecutor::Init() {
   child_executor_->Init();
   hash_table_.clear();
-  hash_table_.resize(plan_->OutputSchema()->GetColumnCount());
 }
 
 bool DistinctExecutor::Next(Tuple *tuple, RID *rid) {
   while (child_executor_->Next(tuple, rid)) {
-    bool is_duplicate = false;
-    std::vector<DistinctKey> keys;
-    keys.reserve(plan_->OutputSchema()->GetColumnCount());
+    DistinctKey key;
+    key.group_bys_.reserve(plan_->OutputSchema()->GetColumnCount());
     for (uint32_t i = 0; i < plan_->OutputSchema()->GetColumnCount(); i++) {
-      keys.push_back(DistinctKey{tuple->GetValue(plan_->OutputSchema(), i)});
-      if (hash_table_[i].count(keys[i]) > 0) {
-        is_duplicate = true;
-        break;
-      }
+      key.group_bys_.push_back(tuple->GetValue(plan_->OutputSchema(), i));
     }
-    if (!is_duplicate) {
-      for (uint32_t i = 0; i < plan_->OutputSchema()->GetColumnCount(); i++) {
-        hash_table_[i].insert(std::move(keys[i]));
-      }
+    if (hash_table_.count(key) <= 0) {
+      hash_table_.insert(std::move(key));
       return true;
     }
   }
