@@ -1,3 +1,6 @@
+path_classifiers:
+  test:
+    - "./build_support/*"
 extraction:
   cpp:
     prepare:
