@@ -1,0 +1,27 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+      - build-essential
+      - clang-8
+      - clang-format-8
+      - clang-tidy-8
+      - cmake
+      - doxygen
+      - git
+      - g++-7
+      - pkg-config
+      - valgrind
+      - zlib1g-dev
+      - gcovr
+      - ninja-build
+    configure:
+      command:
+      - git clone https://github.com/microsoft/vcpkg
+      - ./vcpkg/bootstrap-vcpkg.sh
+      - ./vcpkg/vcpkg install GTest
+      - chmod 777 vcpkg/downloads/
+      - mkdir build
+      - cmake -B ./build -DCMAKE_BUILD_TYPE=Debug -G Ninja
+    index:
+      build_command: cd build && ninja
