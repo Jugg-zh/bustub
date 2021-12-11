@@ -209,9 +209,10 @@ class ValueFactory {
             throw Exception("Invalid input syntax for integer: \'" + str + "\'");
           }
 
-          if (integer > BUSTUB_INT32_MAX || integer < BUSTUB_INT32_MIN) {
-            throw Exception(ExceptionType::OUT_OF_RANGE, "Numeric value out of range.");
-          }
+          // The following piece of code is meaningless.
+          // if (integer > BUSTUB_INT32_MAX || integer < BUSTUB_INT32_MIN) {
+          //   throw Exception(ExceptionType::OUT_OF_RANGE, "Numeric value out of range.");
+          // }
           return ValueFactory::GetIntegerValue(integer);
         }
         default:

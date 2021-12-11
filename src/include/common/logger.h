@@ -172,7 +172,7 @@ void OutputLogHeader(const char *file, int line, const char *func, int level);
 inline void OutputLogHeader(const char *file, int line, const char *func, int level) {
   time_t t = ::time(nullptr);
   tm *curTime = localtime(&t);  // NOLINT
-  char time_str[32];            // FIXME
+  char time_str[32];
   ::strftime(time_str, 32, LOG_LOG_TIME_FORMAT, curTime);
   const char *type;
   switch (level) {

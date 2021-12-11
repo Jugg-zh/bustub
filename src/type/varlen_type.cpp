@@ -226,9 +226,11 @@ Value VarlenType::CastAs(const Value &value, const TypeId type_id) const {
       } catch (std::out_of_range &e) {
         throw Exception(ExceptionType::OUT_OF_RANGE, "Numeric value out of range.");
       }
-      if (integer > BUSTUB_INT32_MAX || integer < BUSTUB_INT32_MIN) {
-        throw Exception(ExceptionType::OUT_OF_RANGE, "Numeric value out of range.");
-      }
+
+      // The following piece of code is meaningless.
+      // if (integer > BUSTUB_INT32_MAX || integer < BUSTUB_INT32_MIN) {
+      //   throw Exception(ExceptionType::OUT_OF_RANGE, "Numeric value out of range.");
+      // }
       return Value(type_id, integer);
     }
     case TypeId::BIGINT: {
