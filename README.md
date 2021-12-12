@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/qdslovelife/bustub/branch/master/graph/badge.svg?token=6Y2ZTDH9E1)](https://codecov.io/gh/qdslovelife/bustub)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/qdslovelife/bustub.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/qdslovelife/bustub/context:cpp)
 
-BusTub is a relational database management system built at [Carnegie Mellon University](https://db.cs.cmu.edu) for the [Introduction to Database Systems](https://15445.courses.cs.cmu.edu) (15-445/645) course. This system was developed for educational purposes and should not be used in production environments.
+BusTub is a disk-oriented relational database management system built at [Carnegie Mellon University](https://db.cs.cmu.edu) for the [Introduction to Database Systems](https://15445.courses.cs.cmu.edu) (15-445/645) course.
 
 ## Gradescope
 
@@ -15,7 +15,7 @@ BusTub is a relational database management system built at [Carnegie Mellon Univ
 - [x] Buffer Pool Manager ![](img/bpm.png)
 - [x] Hash Index ![](img/hi.png)
 - [x] Query Execution ![](img/qe.png)
-- [x] Concurrency Control 
+- [x] Concurrency Control (No LeaderBoard)
 
 ## Build
 
