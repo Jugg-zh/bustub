@@ -24,7 +24,7 @@ BusTub is a disk-oriented relational database management system built at [Carneg
 
 To ensure that you have the proper packages on your machine, run the following script to automatically install them.
 
-Note: This script will install GTest using [vcpkg](https://github.com/microsoft/vcpkg).
+Note: This script will install gtest using [vcpkg](https://github.com/microsoft/vcpkg).
 
 ```
 $ sudo build_support/packages.sh

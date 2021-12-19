@@ -18,7 +18,7 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     string(REPLACE ".cpp" "" bustub_test_name ${bustub_test_filename})
 
     # Add the test target separately and as part of "make check-tests".
-    add_executable(${bustub_test_name} EXCLUDE_FROM_ALL ${bustub_test_source})
+    add_executable(${bustub_test_name} ${bustub_test_source})
     add_dependencies(check-tests ${bustub_test_name})
 
     target_link_libraries(${bustub_test_name} PRIVATE bustub_shared GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
