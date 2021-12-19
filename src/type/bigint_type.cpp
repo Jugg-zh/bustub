@@ -162,7 +162,7 @@ Value BigintType::Sqrt(const Value &val) const {
   return Value(TypeId::DECIMAL, std::sqrt(val.value_.bigint_));
 }
 
-Value BigintType::OperateNull(const Value &left __attribute__((unused)), const Value &right) const {
+Value BigintType::OperateNull(const Value &left [[maybe_unused]], const Value &right) const {
   switch (right.GetTypeId()) {
     case TypeId::TINYINT:
     case TypeId::SMALLINT:

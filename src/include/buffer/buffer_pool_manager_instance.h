@@ -110,7 +110,7 @@ class BufferPoolManagerInstance : public BufferPoolManager {
    * Deallocate a page on disk.
    * @param page_id id of the page to deallocate
    */
-  void DeallocatePage(__attribute__((unused)) page_id_t page_id) {
+  void DeallocatePage([[maybe_unused]] page_id_t page_id) {
     // This is a no-nop right now without a more complex data structure to track deallocated pages
   }
 
@@ -133,9 +133,9 @@ class BufferPoolManagerInstance : public BufferPoolManager {
   /** Array of buffer pool pages. */
   Page *pages_;
   /** Pointer to the disk manager. */
-  DiskManager *disk_manager_ __attribute__((__unused__));
+  DiskManager *disk_manager_ [[maybe_unused]];
   /** Pointer to the log manager. */
-  LogManager *log_manager_ __attribute__((__unused__));
+  LogManager *log_manager_ [[maybe_unused]];
   /** Page table for keeping track of buffer pool pages. */
   std::unordered_map<page_id_t, frame_id_t> page_table_;
   /** Replacer to find unpinned pages for replacement. */

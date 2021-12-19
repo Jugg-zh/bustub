@@ -22,10 +22,18 @@ namespace bustub {
 extern std::chrono::milliseconds cycle_detection_interval;
 
 /** True if logging should be enabled, false otherwise. */
+#if defined(_MSC_VER)
+__declspec(dllimport) extern std::atomic<bool> enable_logging;
+#else
 extern std::atomic<bool> enable_logging;
+#endif	// defined(_MSC_VER)
 
 /** If ENABLE_LOGGING is true, the log should be flushed to disk every LOG_TIMEOUT. */
+#if defined(_MSC_VER)
+__declspec(dllimport) extern std::chrono::duration<int64_t> log_timeout;
+#else
 extern std::chrono::duration<int64_t> log_timeout;
+#endif  // defined(_MSC_VER)
 
 static constexpr int INVALID_PAGE_ID = -1;                                    // invalid page id
 static constexpr int INVALID_TXN_ID = -1;                                     // invalid transaction id

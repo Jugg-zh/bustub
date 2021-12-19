@@ -43,6 +43,7 @@ class ColumnValueExpression : public AbstractExpression {
 
   Value EvaluateAggregate(const std::vector<Value> &group_bys, const std::vector<Value> &aggregates) const override {
     BUSTUB_ASSERT(false, "Aggregation should only refer to group-by and aggregates.");
+    return Value(TypeId::INVALID);
   }
 
   uint32_t GetTupleIdx() const { return tuple_idx_; }

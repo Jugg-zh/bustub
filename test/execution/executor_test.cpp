@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#define DLL_USER
+
 #include "buffer/buffer_pool_manager_instance.h"
 #include "concurrency/transaction_manager.h"
 #include "execution/execution_engine.h"

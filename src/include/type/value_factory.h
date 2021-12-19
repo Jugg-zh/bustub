@@ -34,7 +34,7 @@ namespace bustub {
 
 class ValueFactory {
  public:
-  static inline Value Clone(const Value &src, __attribute__((__unused__)) AbstractPool *dataPool = nullptr) {
+  static inline Value Clone(const Value &src, [[maybe_unused]] AbstractPool *dataPool = nullptr) {
     return src.Copy();
   }
 
@@ -59,18 +59,18 @@ class ValueFactory {
   static inline Value GetBooleanValue(int8_t value) { return Value(TypeId::BOOLEAN, value); }
 
   static inline Value GetVarcharValue(const char *value, bool manage_data,
-                                      __attribute__((__unused__)) AbstractPool *pool = nullptr) {
+                                      [[maybe_unused]] AbstractPool *pool = nullptr) {
     auto len = static_cast<uint32_t>(value == nullptr ? 0U : strlen(value) + 1);
     return GetVarcharValue(value, len, manage_data);
   }
 
   static inline Value GetVarcharValue(const char *value, uint32_t len, bool manage_data,
-                                      __attribute__((__unused__)) AbstractPool *pool = nullptr) {
+                                      [[maybe_unused]] AbstractPool *pool = nullptr) {
     return Value(TypeId::VARCHAR, value, len, manage_data);
   }
 
   static inline Value GetVarcharValue(const std::string &value,
-                                      __attribute__((__unused__)) AbstractPool *pool = nullptr) {
+                                      [[maybe_unused]] AbstractPool *pool = nullptr) {
     return Value(TypeId::VARCHAR, value);
   }
 

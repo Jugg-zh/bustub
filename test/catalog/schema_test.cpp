@@ -1,3 +1,5 @@
+#define DLL_USER
+
 #include "catalog/schema.h"
 #include "gtest/gtest.h"
 

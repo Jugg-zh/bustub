@@ -3,14 +3,22 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # For clang-tidy.
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_CXX_STANDARD 17)              # Compile as C++17
 set(CMAKE_CXX_STANDARD_REQUIRED ON)     # Require C++17 support
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake
-        CACHE STRING "Vcpkg toolchain file")
+set(VCPKG_INSTALLATION_ROOT ${CMAKE_SOURCE_DIR}/vcpkg
+    CACHE STRING "Vcpkg installation directory")
+set(CMAKE_TOOLCHAIN_FILE ${VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake
+    CACHE STRING "Vcpkg toolchain file")
 
 project(BusTub
         VERSION 2019.1
         DESCRIPTION "The BusTub Relational Database Management System (Educational) @ https://github.com/cmu-db/bustub"
         LANGUAGES C CXX
         )
+
+# GTest
+find_package(GTest CONFIG REQUIRED)
+
+# CTest
+enable_testing()
 
 # People keep running CMake in the wrong folder, completely nuking their project or creating weird bugs.
 # This checks if you're running CMake from a folder that already has CMakeLists.txt.
@@ -26,12 +34,11 @@ set(BUSTUB_BUILD_SUPPORT_DIR "${CMAKE_SOURCE_DIR}/build_support")
 set(BUSTUB_CLANG_SEARCH_PATH "/usr/local/bin" "/usr/bin" "/usr/local/opt/llvm/bin" "/usr/local/opt/llvm@8/bin"
         "/usr/local/Cellar/llvm/8.0.1/bin")
 
+if (UNIX)
+
 ######################################################################################################################
 # DEPENDENCIES
 ######################################################################################################################
-
-# CTest
-enable_testing()
 
 # clang-format
 if (NOT DEFINED CLANG_FORMAT_BIN)
@@ -71,9 +78,6 @@ else()
     message(STATUS "BusTub/main found cpplint at ${CPPLINT_BIN}")
 endif()
 
-# GTest
-find_package(GTest CONFIG REQUIRED)
-
 ######################################################################################################################
 # COMPILER SETUP
 ######################################################################################################################
@@ -97,15 +101,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# Includes.
-set(BUSTUB_SRC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/include)
-set(BUSTUB_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/test/include)
-set(BUSTUB_THIRD_PARTY_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third_party)
-include_directories(${BUSTUB_SRC_INCLUDE_DIR} ${BUSTUB_TEST_INCLUDE_DIR} ${BUSTUB_THIRD_PARTY_INCLUDE_DIR})
-include_directories(BEFORE src) # This is needed for gtest.
-
-add_subdirectory(src)
-add_subdirectory(test)
 ######################################################################################################################
 # MAKE TARGETS
 ######################################################################################################################
@@ -190,4 +185,20 @@ setup_target_for_coverage_gcovr_xml(NAME code-coverage EXCLUDE  "${PROJECT_SOURC
                                                                 "${PROJECT_SOURCE_DIR}/src/storage/table/*"
                                                                 "${PROJECT_SOURCE_DIR}/src/vcpkg/*"
                                                                 "${PROJECT_SOURCE_DIR}/src/recovery/*"
-                                                                "${PROJECT_SOURCE_DIR}/src/include/recovery/*")      
+                                                                "${PROJECT_SOURCE_DIR}/src/include/recovery/*")
+
+endif(UNIX)
+
+if (WIN32)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS true)
+endif(WIN32)
+
+# Includes.
+set(BUSTUB_SRC_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src/include)
+set(BUSTUB_TEST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/test/include)
+set(BUSTUB_THIRD_PARTY_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/third_party)
+include_directories(${BUSTUB_SRC_INCLUDE_DIR} ${BUSTUB_TEST_INCLUDE_DIR} ${BUSTUB_THIRD_PARTY_INCLUDE_DIR})
+include_directories(BEFORE src) # This is needed for gtest.
+
+add_subdirectory(src)
+add_subdirectory(test)

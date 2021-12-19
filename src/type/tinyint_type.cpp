@@ -167,7 +167,7 @@ Value TinyintType::Sqrt(const Value &val) const {
   throw Exception("type error");
 }
 
-Value TinyintType::OperateNull(const Value &left __attribute__((unused)), const Value &right) const {
+Value TinyintType::OperateNull(const Value &left [[maybe_unused]], const Value &right) const {
   switch (right.GetTypeId()) {
     case TypeId::TINYINT:
       return Value(TypeId::TINYINT, static_cast<int8_t>(BUSTUB_INT8_NULL));

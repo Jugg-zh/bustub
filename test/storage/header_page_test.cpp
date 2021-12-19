@@ -1,3 +1,5 @@
+#define DLL_USER
+
 #include "storage/page/header_page.h"
 #include "gtest/gtest.h"
 

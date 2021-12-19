@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cstdio>
 
+#define DLL_USER
+
 #include "buffer/buffer_pool_manager_instance.h"
 #include "gtest/gtest.h"
 #include "storage/index/b_plus_tree.h"

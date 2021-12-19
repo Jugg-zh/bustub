@@ -13,6 +13,8 @@
 #include <functional>
 #include <numeric>
 
+#define DLL_USER
+
 #include "common/exception.h"
 #include "gtest/gtest.h"
 #include "primer/p0_starter.h"

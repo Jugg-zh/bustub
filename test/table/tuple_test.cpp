@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#define DLL_USER
+
 #include "buffer/buffer_pool_manager_instance.h"
 #include "gtest/gtest.h"
 #include "logging/common.h"

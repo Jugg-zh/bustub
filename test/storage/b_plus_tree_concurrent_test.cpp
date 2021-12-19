@@ -15,6 +15,8 @@
 #include <functional>
 #include <thread>  // NOLINT
 
+#define DLL_USER
+
 #include "buffer/buffer_pool_manager_instance.h"
 #include "gtest/gtest.h"
 #include "storage/index/b_plus_tree.h"
@@ -39,7 +41,7 @@ void LaunchParallelTest(uint64_t num_threads, Args &&... args) {
 
 // helper function to insert
 void InsertHelper(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree, const std::vector<int64_t> &keys,
-                  __attribute__((unused)) uint64_t thread_itr = 0) {
+                  [[maybe_unused]] uint64_t thread_itr = 0) {
   GenericKey<8> index_key;
   RID rid;
   // create transaction
@@ -55,7 +57,7 @@ void InsertHelper(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree, con
 
 // helper function to seperate insert
 void InsertHelperSplit(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree, const std::vector<int64_t> &keys,
-                       int total_threads, __attribute__((unused)) uint64_t thread_itr) {
+                       int total_threads, [[maybe_unused]] uint64_t thread_itr) {
   GenericKey<8> index_key;
   RID rid;
   // create transaction
@@ -73,7 +75,7 @@ void InsertHelperSplit(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree
 
 // helper function to delete
 void DeleteHelper(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree, const std::vector<int64_t> &remove_keys,
-                  __attribute__((unused)) uint64_t thread_itr = 0) {
+                  [[maybe_unused]] uint64_t thread_itr = 0) {
   GenericKey<8> index_key;
   // create transaction
   Transaction *transaction = new Transaction(0);
@@ -87,7 +89,7 @@ void DeleteHelper(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree, con
 // helper function to seperate delete
 void DeleteHelperSplit(BPlusTree<GenericKey<8>, RID, GenericComparator<8>> *tree,
                        const std::vector<int64_t> &remove_keys, int total_threads,
-                       __attribute__((unused)) uint64_t thread_itr) {
+                       [[maybe_unused]] uint64_t thread_itr) {
   GenericKey<8> index_key;
   // create transaction
   Transaction *transaction = new Transaction(0);

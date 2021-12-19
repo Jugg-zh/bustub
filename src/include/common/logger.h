@@ -95,7 +95,7 @@ void OutputLogHeader(const char *file, int line, const char *func, int level);
 #ifdef LOG_ERROR_ENABLED
 #undef LOG_ERROR_ENABLED
 #endif
-#if LOG_LEVEL <= LOG_LEVEL_ERROR
+#if !defined(_MSC_VER)
 #define LOG_ERROR_ENABLED
 // #pragma message("LOG_ERROR was enabled.")
 #define LOG_ERROR(...)                                                      \
@@ -110,7 +110,7 @@ void OutputLogHeader(const char *file, int line, const char *func, int level);
 #ifdef LOG_WARN_ENABLED
 #undef LOG_WARN_ENABLED
 #endif
-#if LOG_LEVEL <= LOG_LEVEL_WARN
+#if !defined(_MSC_VER)
 #define LOG_WARN_ENABLED
 // #pragma message("LOG_WARN was enabled.")
 #define LOG_WARN(...)                                                      \
@@ -125,7 +125,7 @@ void OutputLogHeader(const char *file, int line, const char *func, int level);
 #ifdef LOG_INFO_ENABLED
 #undef LOG_INFO_ENABLED
 #endif
-#if LOG_LEVEL <= LOG_LEVEL_INFO
+#if !defined(_MSC_VER)
 #define LOG_INFO_ENABLED
 // #pragma message("LOG_INFO was enabled.")
 #define LOG_INFO(...)                                                      \
@@ -140,7 +140,7 @@ void OutputLogHeader(const char *file, int line, const char *func, int level);
 #ifdef LOG_DEBUG_ENABLED
 #undef LOG_DEBUG_ENABLED
 #endif
-#if LOG_LEVEL <= LOG_LEVEL_DEBUG
+#if !defined(_MSC_VER)
 #define LOG_DEBUG_ENABLED
 // #pragma message("LOG_DEBUG was enabled.")
 #define LOG_DEBUG(...)                                                      \
@@ -155,7 +155,7 @@ void OutputLogHeader(const char *file, int line, const char *func, int level);
 #ifdef LOG_TRACE_ENABLED
 #undef LOG_TRACE_ENABLED
 #endif
-#if LOG_LEVEL <= LOG_LEVEL_TRACE
+#if !defined(_MSC_VER)
 #define LOG_TRACE_ENABLED
 // #pragma message("LOG_TRACE was enabled.")
 #define LOG_TRACE(...)                                                      \

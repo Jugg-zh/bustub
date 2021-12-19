@@ -10,6 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+#define DLL_USER
+
 #include "buffer/parallel_buffer_pool_manager.h"
 #include <cstdio>
 #include <random>
@@ -28,7 +30,7 @@ TEST(ParallelBufferPoolManagerTest, BinaryDataTest) {
 
   std::random_device r;
   std::default_random_engine rng(r());
-  std::uniform_int_distribution<char> uniform_dist(0);
+  std::uniform_int_distribution<> uniform_dist(0);
 
   auto *disk_manager = new DiskManager(db_name);
   auto *bpm = new ParallelBufferPoolManager(num_instances, buffer_pool_size, disk_manager);

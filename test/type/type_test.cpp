@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#define DLL_USER
+
 #include "common/exception.h"
 #include "gtest/gtest.h"
 #include "type/value.h"

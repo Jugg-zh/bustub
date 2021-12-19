@@ -18,6 +18,8 @@
 #include <utility>
 #include <vector>
 
+#define DLL_USER
+
 #include "buffer/buffer_pool_manager_instance.h"
 #include "catalog/table_generator.h"
 #include "concurrency/transaction.h"

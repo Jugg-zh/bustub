@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#define DLL_USER
+
 #include "common/bustub_instance.h"
 #include "common/config.h"
 #include "concurrency/lock_manager.h"

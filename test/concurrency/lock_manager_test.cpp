@@ -5,6 +5,8 @@
 #include <random>
 #include <thread>  // NOLINT
 
+#define DLL_USER
+
 #include "common/config.h"
 #include "concurrency/lock_manager.h"
 #include "concurrency/transaction_manager.h"

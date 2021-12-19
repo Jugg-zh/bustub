@@ -1,3 +1,5 @@
+#define DLL_USER
+
 #include "storage/page/b_plus_tree_page.h"
 #include "buffer/buffer_pool_manager_instance.h"
 #include "common/rid.h"

@@ -1,3 +1,5 @@
+#define DLL_USER
+
 #include "catalog/column.h"
 #include "common/exception.h"
 #include "common/logger.h"

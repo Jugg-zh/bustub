@@ -21,7 +21,7 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     add_executable(${bustub_test_name} EXCLUDE_FROM_ALL ${bustub_test_source})
     add_dependencies(check-tests ${bustub_test_name})
 
-    target_link_libraries(${bustub_test_name} bustub_shared GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
+    target_link_libraries(${bustub_test_name} PRIVATE bustub_shared GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
 
     # Set test target properties and dependencies.
     set_target_properties(${bustub_test_name}

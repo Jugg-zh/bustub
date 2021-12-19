@@ -64,11 +64,11 @@ class LogManager {
 
   std::mutex latch_;
 
-  std::thread *flush_thread_ __attribute__((__unused__));
+  std::thread *flush_thread_ [[maybe_unused]];
 
   std::condition_variable cv_;
 
-  DiskManager *disk_manager_ __attribute__((__unused__));
+  DiskManager *disk_manager_ [[maybe_unused]];
 };
 
 }  // namespace bustub

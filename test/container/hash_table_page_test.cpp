@@ -14,6 +14,8 @@
 #include <thread>  // NOLINT
 #include <vector>
 
+#define DLL_USER
+
 #include "buffer/buffer_pool_manager_instance.h"
 #include "common/logger.h"
 #include "gtest/gtest.h"

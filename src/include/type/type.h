@@ -17,13 +17,23 @@
 
 #include "type/type_id.h"
 
+#ifdef DLL_USER
+#define DLL_EXPORT __declspec(dllimport)
+#else
+#define DLL_EXPORT __declspec(dllexport)
+#endif  // DLL_EXPORT
+
 namespace bustub {
 
 class Value;
 
 enum class CmpBool { CmpFalse = 0, CmpTrue = 1, CmpNull = 2 };
 
+#if defined(_MSC_VER)
+class DLL_EXPORT Type {
+#else
 class Type {
+#endif  // defined(_MSC_VER)
  public:
   explicit Type(TypeId type_id) : type_id_(type_id) {}
 
@@ -108,7 +118,6 @@ class Type {
   // Access the raw varlen data stored from the tuple storage
   virtual char *GetData(char *storage);
 
- protected:
   // The actual type ID
   TypeId type_id_;
   // Singleton instances.

@@ -102,8 +102,8 @@ class TransactionManager {
   }
 
   std::atomic<txn_id_t> next_txn_id_{0};
-  LockManager *lock_manager_ __attribute__((__unused__));
-  LogManager *log_manager_ __attribute__((__unused__));
+  LockManager *lock_manager_ [[maybe_unused]];
+  LogManager *log_manager_ [[maybe_unused]];
 
   /** The global transaction latch is used for checkpointing. */
   ReaderWriterLatch global_txn_latch_;
