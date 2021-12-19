@@ -34,6 +34,7 @@ class DLL_EXPORT Type {
 #else
 class Type {
 #endif  // defined(_MSC_VER)
+
  public:
   explicit Type(TypeId type_id) : type_id_(type_id) {}
 

@@ -34,8 +34,7 @@ std::vector<Value> TableGenerator::GenNumericValues(ColumnInsertMeta *col_meta, 
 
   std::default_random_engine generator;
   // TODO(Amadou): Break up in two branches if this is too weird.
-  std::conditional_t<std::is_integral_v<CppType>, std::uniform_int_distribution<>,
-                     std::uniform_real_distribution<>>
+  std::conditional_t<std::is_integral_v<CppType>, std::uniform_int_distribution<>, std::uniform_real_distribution<>>
       distribution(static_cast<CppType>(col_meta->min_), static_cast<CppType>(col_meta->max_));
   for (uint32_t i = 0; i < count; i++) {
     values.emplace_back(Value(col_meta->type_, distribution(generator)));

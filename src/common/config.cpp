@@ -18,7 +18,7 @@ namespace bustub {
 __declspec(dllexport) std::atomic<bool> enable_logging(false);
 #else
 std::atomic<bool> enable_logging(false);
-#endif	// defined(_MSC_VER)
+#endif  // defined(_MSC_VER)
 
 #if defined(_MSC_VER)
 __declspec(dllexport) std::chrono::duration<int64_t> log_timeout(1);

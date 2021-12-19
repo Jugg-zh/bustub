@@ -188,8 +188,7 @@ Value DecimalType::Sqrt(const Value &val) const {
   return Value(TypeId::DECIMAL, std::sqrt(val.value_.decimal_));
 }
 
-Value DecimalType::OperateNull(const Value &left [[maybe_unused]],
-                               const Value &right [[maybe_unused]]) const {
+Value DecimalType::OperateNull(const Value &left[[maybe_unused]], const Value &right[[maybe_unused]]) const {
   return Value(TypeId::DECIMAL, BUSTUB_DECIMAL_NULL);
 }
 

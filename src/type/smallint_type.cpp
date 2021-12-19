@@ -163,7 +163,7 @@ Value SmallintType::Sqrt(const Value &val) const {
   return Value(TypeId::DECIMAL, std::sqrt(val.value_.smallint_));
 }
 
-Value SmallintType::OperateNull(const Value &left [[maybe_unused]], const Value &right) const {
+Value SmallintType::OperateNull(const Value &left[[maybe_unused]], const Value &right) const {
   switch (right.GetTypeId()) {
     case TypeId::TINYINT:
     case TypeId::SMALLINT:

@@ -35,9 +35,9 @@ class CheckpointManager {
   void EndCheckpoint();
 
  private:
-  TransactionManager *transaction_manager_ [[maybe_unused]];
-  LogManager *log_manager_ [[maybe_unused]];
-  BufferPoolManager *buffer_pool_manager_ [[maybe_unused]];
+  TransactionManager *transaction_manager_[[maybe_unused]];
+  LogManager *log_manager_[[maybe_unused]];
+  BufferPoolManager *buffer_pool_manager_[[maybe_unused]];
 };
 
 }  // namespace bustub

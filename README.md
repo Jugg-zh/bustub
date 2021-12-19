@@ -2,7 +2,8 @@
 
 -----------------
 
-[![CMake](https://github.com/qdslovelife/bustub/actions/workflows/codev.yml/badge.svg)](https://github.com/qdslovelife/bustub/actions/workflows/codev.yml)
+[![linux](https://github.com/qdslovelife/bustub/actions/workflows/codev.yml/badge.svg)](https://github.com/qdslovelife/bustub/actions/workflows/codev.yml)
+[![windows](https://github.com/qdslovelife/bustub/actions/workflows/windows.yml/badge.svg)](https://github.com/qdslovelife/bustub/actions/workflows/windows.yml)
 [![codecov](https://codecov.io/gh/qdslovelife/bustub/branch/master/graph/badge.svg?token=6Y2ZTDH9E1)](https://codecov.io/gh/qdslovelife/bustub)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/qdslovelife/bustub.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/qdslovelife/bustub/context:cpp)
 
@@ -23,7 +24,7 @@ BusTub is a disk-oriented relational database management system built at [Carneg
 
 To ensure that you have the proper packages on your machine, run the following script to automatically install them.
 
-Note: This script will install GTest using [vcpkg](https://github.com/microsoft/vcpkg). If you don't like it, you can modify the script and  CMakeLists.txt and use it the way you prefer.
+Note: This script will install GTest using [vcpkg](https://github.com/microsoft/vcpkg).
 
 ```
 $ sudo build_support/packages.sh
@@ -37,6 +38,16 @@ $ cd build
 $ cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
 $ ninja
 ```
+
+### Windows
+
+```
+$ .\build_support\packages.bat
+```
+
+Use visual studio to open the folder, then you're done.
+
+Note: The version of visual studio I am using is [Visual Studio Community 2022 preview](https://visualstudio.microsoft.com/zh-hans/vs/)
 
 ## Format
 

@@ -26,7 +26,7 @@ extern std::chrono::milliseconds cycle_detection_interval;
 __declspec(dllimport) extern std::atomic<bool> enable_logging;
 #else
 extern std::atomic<bool> enable_logging;
-#endif	// defined(_MSC_VER)
+#endif  // defined(_MSC_VER)
 
 /** If ENABLE_LOGGING is true, the log should be flushed to disk every LOG_TIMEOUT. */
 #if defined(_MSC_VER)
