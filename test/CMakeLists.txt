@@ -1,4 +1,5 @@
 file(GLOB BUSTUB_TEST_SOURCES "${PROJECT_SOURCE_DIR}/test/*/*test.cpp")
+include(GoogleTest)
 
 ######################################################################################################################
 # MAKE TARGETS
@@ -21,7 +22,7 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     add_executable(${bustub_test_name} ${bustub_test_source})
     add_dependencies(check-tests ${bustub_test_name})
 
-    target_link_libraries(${bustub_test_name} PRIVATE bustub_shared GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
+    target_link_libraries(${bustub_test_name} PRIVATE bustub_shared GTest::gtest GTest::gtest_main)
 
     # Set test target properties and dependencies.
     set_target_properties(${bustub_test_name}
@@ -31,5 +32,5 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     )
 
     # Add the test under CTest.
-    add_test(${bustub_test_name} ${CMAKE_BINARY_DIR}/test/${bustub_test_name} --gtest_color=yes)
+    gtest_discover_tests(${bustub_test_name})
 endforeach(bustub_test_source ${BUSTUB_TEST_SOURCES})
