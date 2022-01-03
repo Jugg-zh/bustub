@@ -22,7 +22,7 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     add_executable(${bustub_test_name} ${bustub_test_source})
     add_dependencies(check-tests ${bustub_test_name})
 
-    target_link_libraries(${bustub_test_name} PRIVATE bustub_shared GTest::gtest GTest::gtest_main)
+    target_link_libraries(${bustub_test_name} PRIVATE bustub_shared GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
 
     # Set test target properties and dependencies.
     set_target_properties(${bustub_test_name}
@@ -32,5 +32,6 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
     )
 
     # Add the test under CTest.
-    gtest_discover_tests(${bustub_test_name})
+    # gtest_discover_tests(${bustub_test_name})
+    add_test(${butub_test_name} ${CMAKE_BINARY_DIR}/test/${bustub_test_name} --gtest_color=yes)
 endforeach(bustub_test_source ${BUSTUB_TEST_SOURCES})
