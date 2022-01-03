@@ -32,5 +32,5 @@ foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
 
     # Add the test under CTest.
     # gtest_discover_tests(${bustub_test_name})
-    add_test(${butub_test_name} ${CMAKE_BINARY_DIR}/test/${bustub_test_name} --gtest_color=yes)
+    add_test(${bustub_test_name} ${CMAKE_BINARY_DIR}/test/${bustub_test_name} --gtest_color=yes)
 endforeach(bustub_test_source ${BUSTUB_TEST_SOURCES})
