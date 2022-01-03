@@ -1,5 +1,4 @@
 file(GLOB BUSTUB_TEST_SOURCES "${PROJECT_SOURCE_DIR}/test/*/*test.cpp")
-include(GoogleTest)
 
 ######################################################################################################################
 # MAKE TARGETS
